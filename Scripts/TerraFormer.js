@@ -121,5 +121,8 @@ function debugLog(message, data) {
         }
     }
 
-    run();
+    if (!window.terraFormerExecuted) {
+        window.terraFormerExecuted = true;
+        run();
+    }
 }());
