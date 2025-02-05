@@ -40,7 +40,7 @@
 
   let urls = [];
 
-// Durchsuche die Tabelle mit Farmzielen
+  // Durchsuche die Tabelle mit Farmzielen
   $('#plunder_list')
     .find('tr')
     .filter((i, el) => $(el).attr('id')) 
