@@ -46,66 +46,31 @@ function debugLog(message, data) {
     var isAlreadyStarted = false;
 
     /**
-     * Berechnet die Anzahl der Katapulte, die benötigt werden, um ein Gebäude um eine Stufe zu reduzieren.
+     * Lädt die Berichte aus der Spionageseite
      */
-    function cataForLevel(level) {
-        var MAP = {
-            '1': 2, '2': 2, '3': 2, '4': 3, '5': 3,
-            '6': 3, '7': 3, '8': 4, '9': 4, '10': 4,
-            '11': 4, '12': 5, '13': 5, '14': 6, '15': 6,
-            '16': 6, '17': 7, '18': 8, '19': 8, '20': 9,
-            '21': 10, '22': 11, '23': 11, '24': 12, '25': 13,
-            '26': 15, '27': 16, '28': 17, '29': 19, '30': 20,
-        };
-        return MAP[level] || 20; // Fallback für unbekannte Level
-    }
-
-    /**
-     * Wählt das beste Gebäude für einen Katapultangriff aus.
-     */
-    function cataChoose(buildings) {
-        for (var i = 0; i < buildingIds.length; i++) {
-            var bId = buildingIds[i];
-            if (buildings.hasOwnProperty(bId)) {
-                var bInfo = buildings[bId];
-                var minLevel = minLevels[bId] || 0;
-                if (bInfo.level > minLevel) {
-                    var cataCount = cataForLevel(bInfo.level + (extraCata ? 1 : 0));
-                    debugLog("Ziel für Katapulte gewählt", {Gebäude: bId, Katapulte: cataCount, Level: bInfo.level});
-                    return {'id': bId, 'catapult': cataCount, 'level': bInfo.level, 'nextLevel': bInfo.level - 1};
-                }
+    async function loadReports() {
+        try {
+            const response = await fetch('/game.php?screen=report&mode=spy');
+            if (!response.ok) {
+                throw new Error('Fehler beim Laden der Berichte');
             }
+            const text = await response.text();
+            debugLog('Berichte erfolgreich geladen', text);
+            return text;
+        } catch (error) {
+            console.error('Fehler beim Abrufen der Berichte:', error);
+            return null;
         }
-        return null;
-    }
-
-    /**
-     * Setzt das Angriffsformular mit den berechneten Katapultwerten.
-     */
-    function fillCata() {
-        var buildings = JSON.parse(localStorage.getItem('buildings_data') || '{}');
-        var cataInfo = cataChoose(buildings);
-        if (!cataInfo) {
-            UI.SuccessMessage("Kein passendes Gebäude für Katapulte gefunden.");
-            return;
-        }
-        var availableCatapults = parseInt(document.getElementById("units_entry_all_catapult").innerText.replace(/\D/g, ''), 10);
-        if (availableCatapults < cataInfo.catapult) {
-            UI.ErrorMessage("Nicht genug Katapulte verfügbar!");
-            return;
-        }
-        document.getElementById("unit_input_catapult").value = cataInfo.catapult;
-        debugLog("Katapulte gesetzt", cataInfo);
     }
 
     /**
      * Hauptfunktion des Skripts - Führt je nach Seite unterschiedliche Funktionen aus.
      */
-    function run() {
+    async function run() {
         try {
             debugLog("Starte Skript auf Seite: " + game_data.screen);
             if (game_data.screen === "report" && location.href.indexOf('view') > 0) {
-                // Spionagebericht analysieren und Angriff vorbereiten
+                await loadReports();
             } else if (game_data.screen === 'place') {
                 fillCata();
             } else if (game_data.screen === 'am_farm' || game_data.screen === 'report') {
@@ -114,15 +79,13 @@ function debugLog(message, data) {
                 // Konfigurationsmenü aufrufen
             } else {
                 UI.ErrorMessage('Das Skript muss von einem Spionagebericht oder dem Farmassistenten aus gestartet werden.');
-				return;
+                return;
             }
         } catch (e) {
             UI.ErrorMessage("Fehler: " + e.message);
+            console.error(e);
         }
     }
 
-    if (!window.terraFormerExecuted) {
-        window.terraFormerExecuted = true;
-        run();
-    }
+    run();
 }());
