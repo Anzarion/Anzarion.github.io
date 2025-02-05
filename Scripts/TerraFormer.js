@@ -114,6 +114,7 @@ function debugLog(message, data) {
                 // Konfigurationsmenü aufrufen
             } else {
                 UI.ErrorMessage('Das Skript muss von einem Spionagebericht oder dem Farmassistenten aus gestartet werden.');
+				return;
             }
         } catch (e) {
             UI.ErrorMessage("Fehler: " + e.message);
