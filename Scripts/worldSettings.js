@@ -75,9 +75,6 @@ if (typeof WorldConfig === "undefined") {
                 }
         
                 // Debug: Überprüfen, ob alle Daten jetzt korrekt zusammengeführt wurden
-                logDebug("Aktuelle Welteinstellungen in this.config:");
-        
-                // Alle Daten zusammenführen
                 logDebug("Alle Welteinstellungen erfolgreich abgerufen.");
                 return this.config;
             } catch (error) {
