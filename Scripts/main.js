@@ -18,11 +18,11 @@
 
     console.log("🚀 Main-Skript gestartet. Geladene Konfigurationswerte:", window.ScriptConfig);
 
-    // Liste externer Skripte aus dem GitHub-Repository
+    // Liste externer Skripte
     const scripts = [
-        "https://anzarion.github.io/Scripts/worldSettings.js",
-        "https://anzarion.github.io/Scripts/reportAnalyzer.js",
-        "https://anzarion.github.io/Scripts/attackManager.js"
+        "https://anzarion.github.io/Scripts/worldSettings.js", // Welteneinstellungen-Modul
+        "https://anzarion.github.io/Scripts/reportAnalyzer.js", // Berichts-Analyser
+        "https://anzarion.github.io/Scripts/attackManager.js"  // Angriffs-Manager
     ];
 
     // Funktion zum Laden von Skripten
@@ -31,7 +31,7 @@
             let response = await fetch(url);
             if (!response.ok) throw new Error(`Fehler beim Laden: ${url}`);
             let scriptText = await response.text();
-            eval(scriptText);
+            eval(scriptText); // Führt das geladene Skript aus
             console.log(`✅ Erfolgreich geladen: ${url}`);
         } catch (error) {
             console.error(`❌ Fehler beim Laden des Skripts: ${url}`, error);
