@@ -20,7 +20,7 @@ if (typeof WorldConfig === "undefined") {
         
             if (storedConfig) {
                 this.config = JSON.parse(storedConfig);
-                logDebug("Welteinstellungen aus dem Speicher geladen:", this.config);
+                logDebug("Welteinstellungen aus dem Speicher geladen.");
             } else {
                 logDebug("Keine gespeicherten Welteinstellungen gefunden.");
             }
@@ -28,12 +28,12 @@ if (typeof WorldConfig === "undefined") {
             // Füge die gespeicherten Daten für `building_info` und `unit_info` hinzu
             if (storedBuildingInfo) {
                 this.config.buildingInfo = JSON.parse(storedBuildingInfo);
-                logDebug("Gebäudedaten aus dem Speicher geladen:", this.config.buildingInfo);
+                logDebug("Gebäudedaten aus dem Speicher geladen.");
             }
         
             if (storedUnitInfo) {
                 this.config.unitInfo = JSON.parse(storedUnitInfo);
-                logDebug("Einheiteninformationen aus dem Speicher geladen:", this.config.unitInfo);
+                logDebug("Einheiteninformationen aus dem Speicher geladen.");
             }
         
             // Jetzt führe alle 3 API-Abfragen aus, falls noch Daten fehlen
@@ -49,7 +49,7 @@ if (typeof WorldConfig === "undefined") {
                     const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
                     this.config = this.xmlConfigToJson(xmlDoc);  // Korrektes Zusammenführen der Daten
                     localStorage.setItem("world_config", JSON.stringify(this.config));
-                    logDebug("get_config Daten abgerufen und gespeichert:", this.config);
+                    logDebug("get_config Daten abgerufen und gespeichert.");
                 }
         
                 // Wenn die Gebäudedaten fehlen, rufe die API auf
@@ -60,7 +60,7 @@ if (typeof WorldConfig === "undefined") {
                     const buildingData = this.xmlConfigToJson(xmlDoc);
                     this.config.buildingInfo = buildingData;
                     localStorage.setItem("building_info", JSON.stringify(buildingData));
-                    logDebug("get_building_info Daten abgerufen und gespeichert:", buildingData);
+                    logDebug("get_building_info Daten abgerufen und gespeichert.");
                 }
         
                 // Wenn die Einheiteninformationen fehlen, rufe die API auf
@@ -71,11 +71,11 @@ if (typeof WorldConfig === "undefined") {
                     const unitData = this.xmlConfigToJson(xmlDoc);
                     this.config.unitInfo = unitData;
                     localStorage.setItem("unit_info", JSON.stringify(unitData));
-                    logDebug("get_unit_info Daten abgerufen und gespeichert:", unitData);
+                    logDebug("get_unit_info Daten abgerufen und gespeichert.");
                 }
         
                 // Debug: Überprüfen, ob alle Daten jetzt korrekt zusammengeführt wurden
-                logDebug("Aktuelle Welteinstellungen in this.config:", this.config);
+                logDebug("Aktuelle Welteinstellungen in this.config:");
         
                 // Alle Daten zusammenführen
                 logDebug("Alle Welteinstellungen erfolgreich abgerufen.");

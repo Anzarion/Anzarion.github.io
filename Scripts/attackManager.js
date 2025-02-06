@@ -15,8 +15,7 @@ function logDebug(message) {
     }
 }
 
-// Direkt auf die globalen Variablen zugreifen
-logDebug("Verwendete Konfiguration: " + JSON.stringify(window.ScriptConfig));
+// Wir müssen die Konfiguration nicht mehr erneut loggen, daher lassen wir das weg
 
 // Logik für die Entscheidung, wie die Mauer angegriffen wird
 function analyzeWallAttack() {
