@@ -9,31 +9,22 @@
 // @grant        none
 // ==/UserScript==
 
-// **Konfiguration laden**
-let config = window.ScriptConfig || {};
+// Zugriff auf die globalen Variablen im `window.ScriptConfig`
+console.log("Verwendete Konfiguration:", window.ScriptConfig);
 
-// **Debugging und Logik**
-if (config) {
-    console.log("Verwendete Konfiguration:", config);
-} else {
-    console.error("Fehler: Keine Konfiguration gefunden.");
-}
-
-// Funktion zum Laden der externen Skripte und Weitergabe der Konfiguration
+// Funktion zum Laden der externen Skripte
 async function loadExternalScripts() {
     const scripts = [
-        { url: "https://anzarion.github.io/Scripts/attackManager.js", config: config },
-        { url: "https://anzarion.github.io/Scripts/worldSettings.js", config: config },
-        { url: "https://anzarion.github.io/Scripts/reportAnalyzer.js", config: config }
+        "https://anzarion.github.io/Scripts/attackManager.js",
+        "https://anzarion.github.io/Scripts/worldSettings.js",
+        "https://anzarion.github.io/Scripts/reportAnalyzer.js"
     ];
 
     try {
-        // Alle Skripte nacheinander laden und die Konfiguration weitergeben
+        // Alle Skripte nacheinander laden
         for (const script of scripts) {
-            await $.getScript(script.url);
-            console.log(`✅ Erfolgreich geladen: ${script.url}`);
-            // Die Konfiguration wird hier durch den globalen Namespace weitergegeben
-            window.ScriptConfig = script.config;
+            await $.getScript(script);
+            console.log(`✅ Erfolgreich geladen: ${script}`);
         }
         console.log("🚀 Alle externen Skripte wurden erfolgreich geladen!");
     } catch (error) {

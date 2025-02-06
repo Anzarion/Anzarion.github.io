@@ -1,25 +1,23 @@
 
 // ==UserScript==
-// @name         Die Stämme - Angriffsanalyse
+// @name         Die Stämme - Angriffsmanager
 // @namespace    http://tampermonkey.net/
 // @version      1.0
-// @description  Entscheidet, wie die Mauer angegriffen wird (mit Rammböcken oder Katapulten)
+// @description  Verwaltet die Angriffsplanung und -ausführung
 // @author       Dein Name
 // @match        https://zz2.tribalwars.works/game.php?village=*&screen=*
 // @grant        none
 // ==/UserScript==
 
-// Hier erhalten wir die Konfiguration von `window.ScriptConfig`
-const config = window.ScriptConfig || {};
+// Direkt auf die globalen Variablen zugreifen
+console.log("Verwendete Konfiguration:", window.ScriptConfig);
 
-// Funktion, die entscheidet, wie die Mauer angegriffen wird
+// Logik für die Entscheidung, wie die Mauer angegriffen wird
 function analyzeWallAttack() {
-    if (config.wallWithRam) {
+    if (window.ScriptConfig.wallWithRam) {
         console.log("Die Mauer wird mit Rammböcken angegriffen.");
-        // Logik für den Angriff mit Rammböcken
     } else {
         console.log("Die Mauer wird mit Katapulten angegriffen.");
-        // Logik für den Angriff mit Katapulten
     }
 }
 
