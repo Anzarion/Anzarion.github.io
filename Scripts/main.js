@@ -17,7 +17,7 @@ const defaultConfig = {
     minLevels: { 'farm': 22, 'main': 20 } // Mindestlevel für Gebäude
 };
 
-// Konfiguration von `window.ScriptConfig` übernehmen
+// **Konfiguration laden**
 const config = window.ScriptConfig || defaultConfig;
 
 // **Debugging und Logik**
