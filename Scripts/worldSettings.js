@@ -11,29 +11,36 @@ const WorldConfig = {
         const storedBuildingInfo = localStorage.getItem("building_info");
         const storedUnitInfo = localStorage.getItem("unit_info");
     
-        if (storedConfig && storedBuildingInfo && storedUnitInfo) {
-            // Wenn alle Daten vorhanden sind, lade sie aus dem Speicher
+        if (storedConfig) {
             this.config = JSON.parse(storedConfig);
             if (DEBUG) this.logDebug("Welteinstellungen aus dem Speicher geladen:", this.config);
         } else {
-            if (DEBUG) this.logDebug("Daten fehlen im LocalStorage, lade neue Welteinstellungen...");
-            // Führe die API-Abfragen durch
-            return this.fetchAllConfigs();
+            if (DEBUG) this.logDebug("Keine gespeicherten Welteinstellungen gefunden.");
         }
     
-        return this.config; // Gib die geladenen Daten zurück, wenn alles vorhanden ist
+        // Füge die gespeicherten Daten für `building_info` und `unit_info` hinzu
+        if (storedBuildingInfo) {
+            this.config.buildingInfo = JSON.parse(storedBuildingInfo);
+            if (DEBUG) this.logDebug("Gebäudedaten aus dem Speicher geladen:", this.config.buildingInfo);
+        }
+    
+        if (storedUnitInfo) {
+            this.config.unitInfo = JSON.parse(storedUnitInfo);
+            if (DEBUG) this.logDebug("Einheiteninformationen aus dem Speicher geladen:", this.config.unitInfo);
+        }
+    
+        // Jetzt führe alle 3 API-Abfragen aus, falls noch Daten fehlen
+        return this.fetchAllConfigs();
     },
 
     async fetchAllConfigs() {
         try {
-            this.config = {};
-    
             // Wenn die Welteinstellungen fehlen, rufe die API auf
             if (!localStorage.getItem("world_config")) {
                 const response = await fetch("/interface.php?func=get_config");
                 const text = await response.text();
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
-                this.config = { ...this.config, ...this.xmlConfigToJson(xmlDoc) };
+                this.config = this.xmlConfigToJson(xmlDoc);  // Korrektes Zusammenführen der Daten
                 localStorage.setItem("world_config", JSON.stringify(this.config));
                 if (DEBUG) this.logDebug("get_config Daten abgerufen und gespeichert:", this.config);
             }
@@ -60,15 +67,7 @@ const WorldConfig = {
                 if (DEBUG) this.logDebug("get_unit_info Daten abgerufen und gespeichert:", unitData);
             }
     
-            // Debugging: Zeige alle 3 `localStorage`-Daten
-            if (DEBUG) {
-                console.log("Daten aus localStorage:");
-                console.log("world_config:", localStorage.getItem("world_config"));
-                console.log("building_info:", localStorage.getItem("building_info"));
-                console.log("unit_info:", localStorage.getItem("unit_info"));
-            }
-    
-            // Debug: Überprüfen, ob die `this.config`-Daten jetzt korrekt sind
+            // Debug: Überprüfen, ob alle Daten jetzt korrekt zusammengeführt wurden
             if (DEBUG) {
                 console.log("Aktuelle Welteinstellungen in this.config:", this.config);
             }
