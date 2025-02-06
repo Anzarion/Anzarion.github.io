@@ -37,11 +37,18 @@ const WorldConfig = {
     
                 // Debugging-Ausgabe der rohen Daten vor der Verarbeitung
                 if (DEBUG) {
-                    console.log(`Raw Daten von ${url}:`, text); // Gibt die rohen Daten in der Konsole aus
+                    console.log(`Raw Daten von ${url}:`, text); // Gibt die rohen XML-Daten in der Konsole aus
                 }
     
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
-                Object.assign(this.config, this.xmlConfigToJson(xmlDoc));
+                const parsedData = this.xmlConfigToJson(xmlDoc);
+    
+                // Prüft, ob die geparsten Daten leer sind
+                if (Object.keys(parsedData).length === 0) {
+                    console.warn(`Warnung: Keine Daten von ${url} zurückgegeben`);
+                }
+    
+                Object.assign(this.config, parsedData);
             }
     
             this.saveAllConfig();
