@@ -15,8 +15,8 @@ function logDebug(message) {
     }
 }
 
-// Zugriff auf die globalen Variablen im `window.ScriptConfig`
-logDebug("Verwendete Konfiguration: " + JSON.stringify(window.ScriptConfig));
+// Zugriff auf die globalen Variablen im `window.ScriptConfig` und schöne Ausgabe
+logDebug("Verwendete Konfiguration: " + JSON.stringify(window.ScriptConfig, null, 2));
 
 // Funktion zum Laden der externen Skripte
 async function loadExternalScripts() {
