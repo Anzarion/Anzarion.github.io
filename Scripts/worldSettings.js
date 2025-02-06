@@ -33,7 +33,7 @@ const WorldConfig = {
                 const response = await fetch("/interface.php?func=get_config");
                 const text = await response.text();
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
-                this.config = this.xmlConfigToJson(xmlDoc);
+                this.config = { ...this.config, ...this.xmlConfigToJson(xmlDoc) }; // Korrektes Zusammenführen der Daten
                 localStorage.setItem("world_config", JSON.stringify(this.config));
                 if (DEBUG) this.logDebug("get_config Daten abgerufen und gespeichert:", this.config);
             }
@@ -44,6 +44,7 @@ const WorldConfig = {
                 const text = await response.text();
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
                 const buildingData = this.xmlConfigToJson(xmlDoc);
+                this.config.buildingInfo = buildingData; // Speichern der Gebäudedaten in der config
                 localStorage.setItem("building_info", JSON.stringify(buildingData));
                 if (DEBUG) this.logDebug("get_building_info Daten abgerufen und gespeichert:", buildingData);
             }
@@ -54,6 +55,7 @@ const WorldConfig = {
                 const text = await response.text();
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
                 const unitData = this.xmlConfigToJson(xmlDoc);
+                this.config.unitInfo = unitData; // Speichern der Einheiteninformationen in der config
                 localStorage.setItem("unit_info", JSON.stringify(unitData));
                 if (DEBUG) this.logDebug("get_unit_info Daten abgerufen und gespeichert:", unitData);
             }
