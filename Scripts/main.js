@@ -1,59 +1,57 @@
 // ==UserScript==
-// @name         Die Stämme - Main Script
+// @name         Die Stämme - Hauptskript mit erweiterter Funktionalität
 // @namespace    http://tampermonkey.net/
 // @version      1.1
-// @description  Lädt und verwaltet alle externen Skripte für Die Stämme mit dynamischer Konfiguration
+// @description  Lädt und verwaltet alle externen Skripte mit Debugging und Konfiguration
 // @author       Dein Name
 // @match        https://zz2.tribalwars.works/game.php?village=*&screen=*
 // @grant        none
 // ==/UserScript==
 
-(async function() {
-    'use strict';
+// Standardkonfiguration, die verwendet wird, wenn keine Werte gesetzt sind
+const defaultConfig = {
+    numScoot: 1, // Beispiel: Anzahl der Späher
+    unitUsed: ["axe", "light", "heavy", "sword", "spear"], // Reihenfolge der Einheiten
+    buildingIds: ["wall", "smith", "barracks", "snob", "stable", "garage", "market", "farm"], // Reihenfolge der Gebäude
+    extraCata: true, // Beispiel: Zusätzliche Katapulte verwenden
+    minLevels: { 'farm': 22, 'main': 20 } // Mindestlevel für Gebäude
+};
 
-    // Falls keine Konfiguration existiert, erstelle eine leere
-    window.ScriptConfig = window.ScriptConfig || {};
+// Konfiguration wird entweder von `window.ScriptConfig` oder von der Default-Konfiguration übernommen
+const config = window.ScriptConfig || defaultConfig;
 
-    // Debug-Modus global setzen (sicherstellen, dass DEBUG nur einmal gesetzt wird)
-    if (typeof window.DEBUG === 'undefined') {
-        window.DEBUG = true;
+// Debugging-Ausgaben, wenn Konfiguration vorhanden ist
+if (config) {
+    if (config.extraCata) {
+        console.log("Zusätzliche Katapulte werden verwendet.");
     }
 
-    console.log("🚀 Main-Skript gestartet. Geladene Konfigurationswerte:", window.ScriptConfig);
+    // Reihenfolge der Gebäude und Einheiten aus der Konfiguration ausgeben
+    console.log("Reihenfolge der Gebäude:", config.buildingIds.join(", "));
+    console.log("Reihenfolge der Einheiten:", config.unitUsed.join(", "));
+} else {
+    console.error("Fehler: Keine Konfiguration gefunden.");
+}
 
-    // Liste externer Skripte
+// Funktion zum Laden der externen Skripte
+async function loadExternalScripts() {
     const scripts = [
-        "https://anzarion.github.io/Scripts/worldSettings.js", // Welteneinstellungen-Modul
-        "https://anzarion.github.io/Scripts/reportAnalyzer.js", // Berichts-Analyser
-        "https://anzarion.github.io/Scripts/attackManager.js"  // Angriffs-Manager
+        "https://anzarion.github.io/Scripts/attackManager.js",
+        "https://anzarion.github.io/Scripts/worldSettings.js",
+        "https://anzarion.github.io/Scripts/reportAnalyzer.js"
     ];
 
-    // Funktion zum Laden eines Skripts
-    async function loadScript(url) {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Fehler beim Laden: ${url}`);
-            const scriptText = await response.text();
-            const scriptElement = document.createElement('script');
-            scriptElement.text = scriptText;
-            document.body.appendChild(scriptElement); // Skript sicher laden
-            console.log(`✅ Erfolgreich geladen: ${url}`);
-        } catch (error) {
-            console.error(`❌ Fehler beim Laden des Skripts: ${url}`, error);
+    try {
+        // Alle Skripte nacheinander laden
+        for (const script of scripts) {
+            await $.getScript(script);
+            console.log(`✅ Erfolgreich geladen: ${script}`);
         }
+        console.log("🚀 Alle externen Skripte wurden erfolgreich geladen!");
+    } catch (error) {
+        console.error("Fehler beim Laden der externen Skripte:", error);
     }
+}
 
-    // Funktion zum Laden aller Skripte parallel
-    async function loadScripts(scripts) {
-        try {
-            const promises = scripts.map(url => loadScript(url));
-            await Promise.all(promises);  // Wartet, bis alle Skripte geladen sind
-            console.log("🚀 Alle externen Skripte wurden geladen!");
-        } catch (error) {
-            console.error("❌ Fehler beim Laden der Skripte:", error);
-        }
-    }
-
-    // Alle Skripte gleichzeitig laden
-    await loadScripts(scripts);
-})();
+// Skripte laden
+loadExternalScripts();
