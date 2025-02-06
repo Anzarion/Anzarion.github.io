@@ -33,7 +33,7 @@ const WorldConfig = {
                 const response = await fetch("/interface.php?func=get_config");
                 const text = await response.text();
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
-                this.config = { ...this.config, ...this.xmlConfigToJson(xmlDoc) }; // Korrektes Zusammenführen der Daten
+                this.config = { ...this.config, ...this.xmlConfigToJson(xmlDoc) };
                 localStorage.setItem("world_config", JSON.stringify(this.config));
                 if (DEBUG) this.logDebug("get_config Daten abgerufen und gespeichert:", this.config);
             }
@@ -44,7 +44,7 @@ const WorldConfig = {
                 const text = await response.text();
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
                 const buildingData = this.xmlConfigToJson(xmlDoc);
-                this.config.buildingInfo = buildingData; // Speichern der Gebäudedaten in der config
+                this.config.buildingInfo = buildingData;
                 localStorage.setItem("building_info", JSON.stringify(buildingData));
                 if (DEBUG) this.logDebug("get_building_info Daten abgerufen und gespeichert:", buildingData);
             }
@@ -55,9 +55,17 @@ const WorldConfig = {
                 const text = await response.text();
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
                 const unitData = this.xmlConfigToJson(xmlDoc);
-                this.config.unitInfo = unitData; // Speichern der Einheiteninformationen in der config
+                this.config.unitInfo = unitData;
                 localStorage.setItem("unit_info", JSON.stringify(unitData));
                 if (DEBUG) this.logDebug("get_unit_info Daten abgerufen und gespeichert:", unitData);
+            }
+    
+            // Debugging: Zeige alle 3 `localStorage`-Daten
+            if (DEBUG) {
+                console.log("Daten aus localStorage:");
+                console.log("world_config:", localStorage.getItem("world_config"));
+                console.log("building_info:", localStorage.getItem("building_info"));
+                console.log("unit_info:", localStorage.getItem("unit_info"));
             }
     
             // Debug: Überprüfen, ob die `this.config`-Daten jetzt korrekt sind
