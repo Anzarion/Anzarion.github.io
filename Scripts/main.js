@@ -1,51 +1,39 @@
+
 // ==UserScript==
-// @name         Die Stämme - Hauptskript mit erweiterter Funktionalität
+// @name         Die Stämme - Hauptskript mit Variablenweitergabe
 // @namespace    http://tampermonkey.net/
 // @version      1.1
-// @description  Lädt und verwaltet alle externen Skripte mit Debugging und Konfiguration
+// @description  Bündelt alle Skripte und leitet die übergebenen Variablen weiter
 // @author       Dein Name
 // @match        https://zz2.tribalwars.works/game.php?village=*&screen=*
 // @grant        none
 // ==/UserScript==
 
-// Standardkonfiguration, die verwendet wird, wenn keine Werte gesetzt sind
-const defaultConfig = {
-    numScoot: 1, // Beispiel: Anzahl der Späher
-    unitUsed: ["axe", "light", "heavy", "sword", "spear"], // Reihenfolge der Einheiten
-    buildingIds: ["wall", "smith", "barracks", "snob", "stable", "garage", "market", "farm"], // Reihenfolge der Gebäude
-    extraCata: true, // Beispiel: Zusätzliche Katapulte verwenden
-    minLevels: { 'farm': 22, 'main': 20 } // Mindestlevel für Gebäude
-};
-
-// **Konfiguration laden** (aus `window.ScriptConfig` oder Standardwerte)
-let config = window.ScriptConfig || defaultConfig;
+// **Konfiguration laden**
+let config = window.ScriptConfig || {};
 
 // **Debugging und Logik**
 if (config) {
-    if (config.extraCata) {
-        console.log("Zusätzliche Katapulte werden verwendet.");
-    }
-
-    // Reihenfolge der Gebäude und Einheiten aus der Konfiguration ausgeben
-    console.log("Reihenfolge der Gebäude:", config.buildingIds.join(", "));
-    console.log("Reihenfolge der Einheiten:", config.unitUsed.join(", "));
+    console.log("Verwendete Konfiguration:", config);
 } else {
     console.error("Fehler: Keine Konfiguration gefunden.");
 }
 
-// Funktion zum Laden der externen Skripte
+// Funktion zum Laden der externen Skripte und Weitergabe der Konfiguration
 async function loadExternalScripts() {
     const scripts = [
-        "https://anzarion.github.io/Scripts/attackManager.js",
-        "https://anzarion.github.io/Scripts/worldSettings.js",
-        "https://anzarion.github.io/Scripts/reportAnalyzer.js"
+        { url: "https://anzarion.github.io/Scripts/attackManager.js", config: config },
+        { url: "https://anzarion.github.io/Scripts/worldSettings.js", config: config },
+        { url: "https://anzarion.github.io/Scripts/reportAnalyzer.js", config: config }
     ];
 
     try {
-        // Alle Skripte nacheinander laden
+        // Alle Skripte nacheinander laden und die Konfiguration weitergeben
         for (const script of scripts) {
-            await $.getScript(script);
-            console.log(`✅ Erfolgreich geladen: ${script}`);
+            await $.getScript(script.url);
+            console.log(`✅ Erfolgreich geladen: ${script.url}`);
+            // Die Konfiguration wird hier durch den globalen Namespace weitergegeben
+            window.ScriptConfig = script.config;
         }
         console.log("🚀 Alle externen Skripte wurden erfolgreich geladen!");
     } catch (error) {
