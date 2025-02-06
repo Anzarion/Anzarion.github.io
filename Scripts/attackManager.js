@@ -8,20 +8,22 @@
 // @grant        none
 // ==/UserScript==
 
-// Direkt auf die globalen Variablen zugreifen
-console.log("Verwendete Konfiguration:", window.ScriptConfig);
-
-// Debugging basierend auf `DEBUG_MODE`
-if (window.ScriptConfig.DEBUG_MODE) {
-    console.log("Debugging ist aktiviert.");
+// Funktion zum loggen von Debugging-Informationen
+function logDebug(message) {
+    if (window.ScriptConfig.DEBUG_MODE) {
+        console.log(message);
+    }
 }
+
+// Direkt auf die globalen Variablen zugreifen
+logDebug("Verwendete Konfiguration: " + JSON.stringify(window.ScriptConfig));
 
 // Logik für die Entscheidung, wie die Mauer angegriffen wird
 function analyzeWallAttack() {
     if (window.ScriptConfig.wallWithRam) {
-        console.log("Die Mauer wird mit Rammböcken angegriffen.");
+        logDebug("Die Mauer wird mit Rammböcken angegriffen.");
     } else {
-        console.log("Die Mauer wird mit Katapulten angegriffen.");
+        logDebug("Die Mauer wird mit Katapulten angegriffen.");
     }
 }
 
