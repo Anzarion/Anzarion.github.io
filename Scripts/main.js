@@ -17,10 +17,10 @@ const defaultConfig = {
     minLevels: { 'farm': 22, 'main': 20 } // Mindestlevel für Gebäude
 };
 
-// Konfiguration wird entweder von `window.ScriptConfig` oder von der Default-Konfiguration übernommen
+// Konfiguration von `window.ScriptConfig` übernehmen
 const config = window.ScriptConfig || defaultConfig;
 
-// Debugging-Ausgaben, wenn Konfiguration vorhanden ist
+// **Debugging und Logik**
 if (config) {
     if (config.extraCata) {
         console.log("Zusätzliche Katapulte werden verwendet.");
