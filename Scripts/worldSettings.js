@@ -88,14 +88,20 @@ const WorldConfig = {
         for (let i = 0; i < xml.children.length; i++) {
             let item = xml.children[i];
             let nodeName = item.nodeName;
-
-            if (obj[nodeName] === undefined) {
-                obj[nodeName] = this.xmlConfigToJson(item);
+    
+            // Wenn der Knoten nur einmal existiert, speichere den Textinhalt
+            if (item.children.length === 0) {
+                obj[nodeName] = item.textContent.trim();
             } else {
-                if (!Array.isArray(obj[nodeName])) {
-                    obj[nodeName] = [obj[nodeName]];
+                // Wenn der Knoten mehrfach vorkommt, speichere sie als Array
+                if (obj[nodeName] === undefined) {
+                    obj[nodeName] = this.xmlConfigToJson(item);
+                } else {
+                    if (!Array.isArray(obj[nodeName])) {
+                        obj[nodeName] = [obj[nodeName]];
+                    }
+                    obj[nodeName].push(this.xmlConfigToJson(item));
                 }
-                obj[nodeName].push(this.xmlConfigToJson(item));
             }
         }
         return obj;
