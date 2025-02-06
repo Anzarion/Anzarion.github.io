@@ -1,4 +1,4 @@
-const DEBUG = window.MAIN_DEBUG ?? false; // Debug-Modus aktivieren (true/false)
+const DEBUG = window.DEBUG ?? false; // Debug-Modus aktivieren (true/false)
 
 // **Modul: Laden & Speichern der Welteinstellungen**
 const WorldConfig = {

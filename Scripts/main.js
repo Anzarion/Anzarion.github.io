@@ -14,8 +14,10 @@
     // Falls keine Konfiguration existiert, erstelle eine leere
     window.ScriptConfig = window.ScriptConfig || {};
 
-    // Debug-Modus global setzen
-    window.MAIN_DEBUG = true;
+    // Debug-Modus global setzen (sicherstellen, dass DEBUG nur einmal gesetzt wird)
+    if (typeof window.DEBUG === 'undefined') {
+        window.DEBUG = true;
+    }
 
     console.log("🚀 Main-Skript gestartet. Geladene Konfigurationswerte:", window.ScriptConfig);
 
