@@ -1,7 +1,7 @@
 // Sicherstellen, dass `WorldConfig` nur einmal deklariert wird
 if (typeof WorldConfig === "undefined") {
     // **Modul: Laden & Speichern der Welteinstellungen**
-    const WorldConfig = {
+    var WorldConfig = {
         config: null,
         isLoading: false,
 
