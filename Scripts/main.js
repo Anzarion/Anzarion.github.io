@@ -15,8 +15,8 @@ function logDebug(message) {
     }
 }
 
-// Zugriff auf die globalen Variablen im `window.ScriptConfig` und schöne Ausgabe
-logDebug("Verwendete Konfiguration: " + JSON.stringify(window.ScriptConfig, null, 2));
+// Zugriff auf die globalen Variablen im `window.ScriptConfig` und Ausgabe der flachen Version ohne Prototyp
+logDebug("Verwendete Konfiguration: " + JSON.stringify({ ...window.ScriptConfig }, null, 2)); // Verwende Spread-Operator für flache Ausgabe
 
 // Funktion zum Laden der externen Skripte
 async function loadExternalScripts() {
