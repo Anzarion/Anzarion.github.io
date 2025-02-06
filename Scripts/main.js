@@ -6,6 +6,7 @@
 // @author       Dein Name
 // @match        https://zz2.tribalwars.works/game.php?village=*&screen=*
 // @grant        none
+// ==/UserScript==
 
 (async function() {
     'use strict';
@@ -25,24 +26,32 @@
         "https://anzarion.github.io/Scripts/attackManager.js"  // Angriffs-Manager
     ];
 
-    // Funktion zum Laden von Skripten
+    // Funktion zum Laden eines Skripts
     async function loadScript(url) {
         try {
-            let response = await fetch(url);
+            const response = await fetch(url);
             if (!response.ok) throw new Error(`Fehler beim Laden: ${url}`);
-            let scriptText = await response.text();
-            eval(scriptText); // Führt das geladene Skript aus
+            const scriptText = await response.text();
+            const scriptElement = document.createElement('script');
+            scriptElement.text = scriptText;
+            document.body.appendChild(scriptElement); // Skript sicher laden
             console.log(`✅ Erfolgreich geladen: ${url}`);
         } catch (error) {
             console.error(`❌ Fehler beim Laden des Skripts: ${url}`, error);
         }
     }
 
-    // Alle Skripte nacheinander laden
-    for (let script of scripts) {
-        await loadScript(script);
+    // Funktion zum Laden aller Skripte parallel
+    async function loadScripts(scripts) {
+        try {
+            const promises = scripts.map(url => loadScript(url));
+            await Promise.all(promises);  // Wartet, bis alle Skripte geladen sind
+            console.log("🚀 Alle externen Skripte wurden geladen!");
+        } catch (error) {
+            console.error("❌ Fehler beim Laden der Skripte:", error);
+        }
     }
 
-    console.log("🚀 Alle externen Skripte wurden geladen!");
-
+    // Alle Skripte gleichzeitig laden
+    await loadScripts(scripts);
 })();
