@@ -29,15 +29,21 @@ const WorldConfig = {
                 "/interface.php?func=get_building_info",
                 "/interface.php?func=get_unit_info"
             ];
-
+    
             this.config = {};
             for (const url of endpoints) {
                 const response = await fetch(url);
                 const text = await response.text();
+    
+                // Debugging-Ausgabe der rohen Daten vor der Verarbeitung
+                if (DEBUG) {
+                    console.log(`Raw Daten von ${url}:`, text); // Gibt die rohen Daten in der Konsole aus
+                }
+    
                 const xmlDoc = new DOMParser().parseFromString(text, "text/xml");
                 Object.assign(this.config, this.xmlConfigToJson(xmlDoc));
             }
-
+    
             this.saveAllConfig();
             if (DEBUG) this.logDebug("Alle Welteinstellungen gespeichert:", this.config);
             return this.config;
@@ -47,7 +53,7 @@ const WorldConfig = {
             this.isLoading = false;
         }
     },
-
+    
     // Speichert ALLE Weltdaten in localStorage für spätere Nutzung durch andere Skripte
     saveAllConfig() {
         const currentConfig = JSON.stringify(this.config);
