@@ -1,6 +1,5 @@
-
 // ==UserScript==
-// @name         Die Stämme - Hauptskript mit Variablenweitergabe
+// @name         Die Stämme - Hauptskript mit Variablenweitergabe und Debug-Modus
 // @namespace    http://tampermonkey.net/
 // @version      1.1
 // @description  Bündelt alle Skripte und leitet die übergebenen Variablen weiter
@@ -11,6 +10,13 @@
 
 // Zugriff auf die globalen Variablen im `window.ScriptConfig`
 console.log("Verwendete Konfiguration:", window.ScriptConfig);
+
+// Debugging basierend auf `DEBUG_MODE`
+if (window.ScriptConfig.DEBUG_MODE) {
+    console.log("Debugging ist aktiviert.");
+} else {
+    console.log("Debugging ist deaktiviert.");
+}
 
 // Funktion zum Laden der externen Skripte
 async function loadExternalScripts() {

@@ -1,4 +1,3 @@
-
 // ==UserScript==
 // @name         Die Stämme - Angriffsmanager
 // @namespace    http://tampermonkey.net/
@@ -11,6 +10,11 @@
 
 // Direkt auf die globalen Variablen zugreifen
 console.log("Verwendete Konfiguration:", window.ScriptConfig);
+
+// Debugging basierend auf `DEBUG_MODE`
+if (window.ScriptConfig.DEBUG_MODE) {
+    console.log("Debugging ist aktiviert.");
+}
 
 // Logik für die Entscheidung, wie die Mauer angegriffen wird
 function analyzeWallAttack() {
