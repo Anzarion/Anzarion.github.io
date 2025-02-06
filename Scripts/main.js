@@ -8,15 +8,15 @@
 // @grant        none
 // ==/UserScript==
 
-// Zugriff auf die globalen Variablen im `window.ScriptConfig`
-console.log("Verwendete Konfiguration:", window.ScriptConfig);
-
-// Debugging basierend auf `DEBUG_MODE`
-if (window.ScriptConfig.DEBUG_MODE) {
-    console.log("Debugging ist aktiviert.");
-} else {
-    console.log("Debugging ist deaktiviert.");
+// Funktion zum loggen von Debugging-Informationen
+function logDebug(message) {
+    if (window.ScriptConfig.DEBUG_MODE) {
+        console.log(message);
+    }
 }
+
+// Zugriff auf die globalen Variablen im `window.ScriptConfig`
+logDebug("Verwendete Konfiguration: " + JSON.stringify(window.ScriptConfig));
 
 // Funktion zum Laden der externen Skripte
 async function loadExternalScripts() {
@@ -30,9 +30,9 @@ async function loadExternalScripts() {
         // Alle Skripte nacheinander laden
         for (const script of scripts) {
             await $.getScript(script);
-            console.log(`✅ Erfolgreich geladen: ${script}`);
+            logDebug(`✅ Erfolgreich geladen: ${script}`);
         }
-        console.log("🚀 Alle externen Skripte wurden erfolgreich geladen!");
+        logDebug("🚀 Alle externen Skripte wurden erfolgreich geladen!");
     } catch (error) {
         console.error("Fehler beim Laden der externen Skripte:", error);
     }
