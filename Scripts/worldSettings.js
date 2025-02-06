@@ -58,12 +58,9 @@ const WorldConfig = {
                 if (DEBUG) this.logDebug("get_unit_info Daten abgerufen und gespeichert:", unitData);
             }
     
-            // Debug: Überprüfen der gespeicherten Daten im localStorage
+            // Debug: Überprüfen, ob die `this.config`-Daten jetzt korrekt sind
             if (DEBUG) {
-                console.log("Gespeicherte Daten im LocalStorage:");
-                console.log("world_config:", localStorage.getItem("world_config"));
-                console.log("building_info:", localStorage.getItem("building_info"));
-                console.log("unit_info:", localStorage.getItem("unit_info"));
+                console.log("Aktuelle Welteinstellungen in this.config:", this.config);
             }
     
             // Alle Daten zusammenführen
