@@ -23,13 +23,6 @@
 (async function () {
     console.log("⚔️ Lade attackManager.js...");
 
-    // Sicherstellen, dass twSDK geladen ist
-    if (typeof twSDK === "undefined") {
-        await $.getScript("https://twscripts.dev/scripts/twSDK.js");
-        await twSDK.init({ name: "attackManager", version: "1.1.0" });
-        console.log("✅ twSDK erfolgreich geladen!");
-    }
-
     /**
      * Sendet Späherangriffe auf ein angegebenes Dorf.
      * @param {number} villageId - ID des Dorfes

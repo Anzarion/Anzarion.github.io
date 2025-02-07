@@ -16,47 +16,42 @@
  *  - 1.0.0: Initiale Version mit LocalStorage-Funktionen
  */
 
-// Warten, bis twSDK geladen ist, dann das Skript starten
-$.getScript(`https://twscripts.dev/scripts/twSDK.js?url=${document.currentScript.src}`, async function () {
-    await twSDK.init({ name: "Storage Helper", version: "1.1.0", author: "Anzarion" });
+console.log("💾 storageHelper.js gestartet");
 
-    console.log("💾 storageHelper.js gestartet");
+const STORAGE_KEY = "analyzedReports";
 
-    const STORAGE_KEY = "analyzedReports";
+const storageHelper = {
+    /**
+     * 🔍 Holt alle gespeicherten Berichte aus dem LocalStorage.
+     * @returns {Array} Gespeicherte Berichte oder leeres Array
+     */
+    getReports: function () {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    },
 
-    const storageHelper = {
-        /**
-         * 🔍 Holt alle gespeicherten Berichte aus dem LocalStorage.
-         * @returns {Array} Gespeicherte Berichte oder leeres Array
-         */
-        getReports: function () {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        },
+    /**
+     * 💾 Speichert neue Berichte im LocalStorage, verhindert doppelte Einträge.
+     * @param {Array} reports - Neue Berichte, die gespeichert werden sollen.
+     */
+    saveReports: function (reports) {
+        let storedReports = storageHelper.getReports();
+        let updatedReports = [...storedReports, ...reports];
 
-        /**
-         * 💾 Speichert neue Berichte im LocalStorage, verhindert doppelte Einträge.
-         * @param {Array} reports - Neue Berichte, die gespeichert werden sollen.
-         */
-        saveReports: function (reports) {
-            let storedReports = storageHelper.getReports();
-            let updatedReports = [...storedReports, ...reports];
+        // Doppelte URLs entfernen
+        let uniqueReports = Array.from(new Map(updatedReports.map(r => [r.url, r])).values());
 
-            // Doppelte URLs entfernen
-            let uniqueReports = Array.from(new Map(updatedReports.map(r => [r.url, r])).values());
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(uniqueReports));
+        console.log(`💾 ${reports.length} neue Berichte gespeichert.`);
+    },
 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(uniqueReports));
-            console.log(`💾 ${reports.length} neue Berichte gespeichert.`);
-        },
+    /**
+     * 🗑 Löscht alle gespeicherten Berichte aus dem LocalStorage.
+     */
+    clearReports: function () {
+        localStorage.removeItem(STORAGE_KEY);
+        console.log("🗑 Alle gespeicherten Berichte wurden gelöscht.");
+    }
+};
 
-        /**
-         * 🗑 Löscht alle gespeicherten Berichte aus dem LocalStorage.
-         */
-        clearReports: function () {
-            localStorage.removeItem(STORAGE_KEY);
-            console.log("🗑 Alle gespeicherten Berichte wurden gelöscht.");
-        }
-    };
-
-    // Objekt global verfügbar machen
-    window.storageHelper = storageHelper;
-});
+// Objekt global verfügbar machen
+window.storageHelper = storageHelper;

@@ -16,65 +16,60 @@
  *  - 1.0.0: Initiale Version mit UI-Funktionen
  */
 
-// Warten, bis twSDK geladen ist, dann das Skript starten
-$.getScript(`https://twscripts.dev/scripts/twSDK.js?url=${document.currentScript.src}`, async function () {
-    await twSDK.init({ name: "UI Helper", version: "1.1.0", author: "Anzarion" });
+console.log("🎨 uiHelper.js gestartet");
 
-    console.log("🎨 uiHelper.js gestartet");
+const uiHelper = {
+    /**
+     * 📦 Erstellt eine UI-Box (z. B. für Overlays).
+     * @param {string} title - Titel der UI-Box.
+     * @param {string} content - HTML-Inhalt der Box.
+     * @param {string} id - Eindeutige ID für die Box.
+     * @returns {HTMLElement} Das erstellte UI-Element.
+     */
+    createBox: function (title, content, id = "customUIBox") {
+        let existingBox = document.getElementById(id);
+        if (existingBox) existingBox.remove();
 
-    const uiHelper = {
-        /**
-         * 📦 Erstellt eine UI-Box (z. B. für Overlays).
-         * @param {string} title - Titel der UI-Box.
-         * @param {string} content - HTML-Inhalt der Box.
-         * @param {string} id - Eindeutige ID für die Box.
-         * @returns {HTMLElement} Das erstellte UI-Element.
-         */
-        createBox: function (title, content, id = "customUIBox") {
-            let existingBox = document.getElementById(id);
-            if (existingBox) existingBox.remove();
+        let box = document.createElement("div");
+        box.id = id;
+        box.style.position = "fixed";
+        box.style.top = "100px";
+        box.style.right = "10px";
+        box.style.width = "250px";
+        box.style.background = "#f4e4bc";
+        box.style.border = "2px solid #5c4828";
+        box.style.padding = "10px";
+        box.style.zIndex = "9999";
+        box.style.fontSize = "12px";
+        box.style.overflowY = "auto";
+        box.style.maxHeight = "400px";
 
-            let box = document.createElement("div");
-            box.id = id;
-            box.style.position = "fixed";
-            box.style.top = "100px";
-            box.style.right = "10px";
-            box.style.width = "250px";
-            box.style.background = "#f4e4bc";
-            box.style.border = "2px solid #5c4828";
-            box.style.padding = "10px";
-            box.style.zIndex = "9999";
-            box.style.fontSize = "12px";
-            box.style.overflowY = "auto";
-            box.style.maxHeight = "400px";
+        box.innerHTML = `
+            <h4>${title}</h4>
+            <div>${content}</div>
+            <button onclick="document.getElementById('${id}').remove()">❌ Schließen</button>
+        `;
 
-            box.innerHTML = `
-                <h4>${title}</h4>
-                <div>${content}</div>
-                <button onclick="document.getElementById('${id}').remove()">❌ Schließen</button>
-            `;
+        document.body.appendChild(box);
+        return box;
+    },
 
-            document.body.appendChild(box);
-            return box;
-        },
+    /**
+     * 🔘 Erstellt einen Button mit einer Aktion.
+     * @param {string} text - Button-Beschriftung.
+     * @param {function} onClick - Funktion, die beim Klick ausgeführt wird.
+     * @returns {HTMLElement} Der Button.
+     */
+    createButton: function (text, onClick) {
+        let button = document.createElement("button");
+        button.innerText = text;
+        button.style.margin = "5px";
+        button.style.padding = "5px";
+        button.style.cursor = "pointer";
+        button.onclick = onClick;
+        return button;
+    }
+};
 
-        /**
-         * 🔘 Erstellt einen Button mit einer Aktion.
-         * @param {string} text - Button-Beschriftung.
-         * @param {function} onClick - Funktion, die beim Klick ausgeführt wird.
-         * @returns {HTMLElement} Der Button.
-         */
-        createButton: function (text, onClick) {
-            let button = document.createElement("button");
-            button.innerText = text;
-            button.style.margin = "5px";
-            button.style.padding = "5px";
-            button.style.cursor = "pointer";
-            button.onclick = onClick;
-            return button;
-        }
-    };
-
-    // Objekt global verfügbar machen
-    window.uiHelper = uiHelper;
-});
+// Objekt global verfügbar machen
+window.uiHelper = uiHelper;

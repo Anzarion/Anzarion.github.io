@@ -29,13 +29,6 @@
     const STORAGE_KEY = "farmReports";
     const REPORT_SELECTOR = "#plunder_list tr";
 
-    // Prüfen, ob twSDK geladen ist, falls nicht -> laden
-    if (typeof twSDK === "undefined") {
-        await $.getScript("https://twscripts.dev/scripts/twSDK.js");
-        await twSDK.init({ name: "farmAssist", version: "1.1.0" });
-        console.log("✅ twSDK erfolgreich geladen!");
-    }
-
     /**
      * Sammelt Berichte aus dem Farm-Assistenten.
      */

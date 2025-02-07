@@ -22,13 +22,6 @@
 (async function () {
     console.log("🌍 Lade worldSettings.js...");
 
-    // Sicherstellen, dass twSDK geladen ist
-    if (typeof twSDK === "undefined") {
-        await $.getScript("https://twscripts.dev/scripts/twSDK.js");
-        await twSDK.init({ name: "worldSettings", version: "1.1.0" });
-        console.log("✅ twSDK erfolgreich geladen!");
-    }
-
     /**
      * Ruft die Weltdaten von der API ab und speichert sie im LocalStorage.
      */
