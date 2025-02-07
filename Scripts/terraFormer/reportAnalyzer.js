@@ -1,55 +1,48 @@
 /**
  * 📜 reportAnalyzer.js
- * =====================
+ * ====================
  * Autor:        Anzarion
  * Version:      1.1.0
- * Beschreibung: Analysiert Berichte auf der Berichtsübersichtsseite und speichert relevante Daten.
+ * Beschreibung: Analysiert Berichte in der Berichtsübersicht und speichert sie im LocalStorage.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/reportAnalyzer.js
  * 
- * Änderungen:
- *  - 1.0.0: Initiale Version, erfasst Berichte und speichert sie im LocalStorage.
- *  - 1.1.0: Integriert twSDK für effizientere LocalStorage-Verwaltung.
+ * Funktionen:
+ *  - Liest Berichte auf der Berichtsübersicht aus
+ *  - Unterscheidet zwischen Berichten mit/ohne Gebäudedaten
+ *  - Speichert relevante Berichte im LocalStorage für den Angriffmanager
  * 
- * =====================
- * // Vorherige Version 1.0.0:
- * (async function() {
- *    console.log("📊 reportAnalyzer.js gestartet");
- *    const STORAGE_KEY = "analyzedReports";
- *    function collectReports() { ... }
- *    function saveReportsToStorage(reports) { ... }
- *    let reports = collectReports();
- *    saveReportsToStorage(reports);
- * })();
- * =====================
+ * Änderungen:
+ *  - 1.1.0: Anpassung an terraFormer-Struktur mit twSDK
+ *  - 1.0.0: Initiale Version mit Berichtsanalyse & Speicherung
  */
 
 (async function () {
-    console.log("📊 Lade reportAnalyzer.js...");
+    console.log("📜 reportAnalyzer.js gestartet");
 
+    // Sicherstellen, dass twSDK geladen ist
+    await twSDK.init();
+
+    // LocalStorage Key für Berichte
     const STORAGE_KEY = "analyzedReports";
-    const REPORT_ROW_SELECTOR = "table.vis tr"; // CSS-Selektor für Berichtszeilen
 
-    // Prüfen, ob twSDK geladen ist, falls nicht -> laden
-    if (typeof twSDK === "undefined") {
-        await $.getScript("https://twscripts.dev/scripts/twSDK.js");
-        await twSDK.init({ name: "reportAnalyzer", version: "1.1.0" });
-        console.log("✅ twSDK erfolgreich geladen!");
-    }
+    // Selektor für Berichtszeilen in der Übersicht
+    const REPORT_SELECTOR = "#report_list tr";
 
-    /**
-     * Sammelt relevante Berichts-URLs aus der Berichtsübersicht.
-     */
-    function collectReports() {
+    // Funktion zum Analysieren der Berichte
+    function analyzeReports() {
         let reports = [];
-        document.querySelectorAll(REPORT_ROW_SELECTOR).forEach(row => {
-            let linkElem = row.querySelector("a[href*='screen=report&view=']");
-            if (linkElem) {
-                let reportId = new URL(linkElem.href).searchParams.get("view");
+        
+        document.querySelectorAll(REPORT_SELECTOR).forEach(row => {
+            let linkElem = row.querySelector("td:nth-child(3) a");
+            let timeElem = row.querySelector("td:nth-child(4)");
+            let buildingDataElem = row.querySelector("td:nth-child(5) img");
+
+            if (linkElem && timeElem) {
                 let report = {
-                    id: reportId,
                     url: linkElem.href,
-                    title: linkElem.textContent.trim(),
-                    timestamp: Date.now(),
+                    coords: linkElem.textContent.trim(),
+                    time: new Date(timeElem.textContent.trim()),
+                    hasBuildingInfo: !!buildingDataElem,
                 };
                 reports.push(report);
             }
@@ -58,24 +51,19 @@
         return reports;
     }
 
-    /**
-     * Speichert die Berichts-URLs im LocalStorage, falls sie noch nicht existieren.
-     */
-    function saveReportsToStorage(reports) {
-        let storedData = twSDK.getLocalStorage(STORAGE_KEY, []);
-        let newReports = reports.filter(report => !storedData.some(r => r.id === report.id));
-
-        if (newReports.length > 0) {
-            let updatedReports = [...storedData, ...newReports];
-            twSDK.setLocalStorage(STORAGE_KEY, updatedReports);
-            console.log(`💾 ${newReports.length} neue Berichte gespeichert.`);
-        } else {
-            console.log("⚠ Keine neuen Berichte gefunden (bereits gespeichert).");
-        }
+    // Funktion zum Speichern der analysierten Berichte
+    function saveReports(reports) {
+        let storedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let updatedReports = [...storedReports, ...reports];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReports));
+        console.log(`💾 ${reports.length} Berichte gespeichert.`);
     }
 
     // Berichte erfassen & speichern
-    let reports = collectReports();
-    saveReportsToStorage(reports);
-
+    let reports = analyzeReports();
+    if (reports.length > 0) {
+        saveReports(reports);
+    } else {
+        console.log("⚠ Keine neuen Berichte gefunden.");
+    }
 })();
