@@ -9,6 +9,7 @@
  * Änderungen:
  *  - 1.0.0: Initiale Version, erkennt FarmAssistent & Berichte automatisch.
  *  - 1.1.0: Integriert twSDK für einheitliches Laden von Modulen.
+ *  - 1.1.1: Fix für `twSDK.init()`
  * 
  * =====================
  * // Vorherige Version 1.0.0:
@@ -27,7 +28,7 @@
     // Prüfen, ob twSDK geladen ist, falls nicht -> laden
     if (typeof twSDK === "undefined") {
         await $.getScript("https://twscripts.dev/scripts/twSDK.js");
-        await twSDK.init({ name: "terraFormer", version: "1.1.0" });
+        await twSDK.init({ name: "terraFormer", version: "1.1.0", author: "Anzarion" });
         console.log("✅ twSDK erfolgreich geladen!");
     }
 
