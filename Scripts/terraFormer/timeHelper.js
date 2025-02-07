@@ -1,42 +1,63 @@
 /**
- * ⏳ timeHelper.js
- * =====================
+ * 📜 timeHelper.js
+ * ====================
  * Autor:        Anzarion
- * Version:      1.0.0
- * Beschreibung: Stellt Funktionen für Zeitstempel- und Datumsberechnungen bereit.
+ * Version:      1.1.0
+ * Beschreibung: Hilfsfunktionen für Zeitstempel und Datumsberechnungen.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/timeHelper.js
  * 
  * Funktionen:
- *  - `getCurrentTimestamp()`: Gibt den aktuellen Zeitstempel zurück.
- *  - `isOlderThan(timestamp, hours)`: Prüft, ob ein Zeitstempel älter als eine bestimmte Anzahl von Stunden ist.
- *  - `formatTimestamp(timestamp)`: Wandelt einen Zeitstempel in ein lesbares Datum um.
+ *  - Konvertiert Zeitstempel aus dem Spiel in lesbare Formate
+ *  - Berechnet Differenzen zwischen Zeitpunkten
+ *  - Unterstützt Formatierungen für Anzeigezwecke
  * 
  * Änderungen:
- *  - 1.0.0: Initiale Version mit Zeitstempel-Berechnungen
+ *  - 1.1.0: Integration von twSDK für zentrale Skriptverwaltung
+ *  - 1.0.0: Initiale Version mit Zeit-Funktionen
  */
 
-const timeHelper = (() => {
-    return {
-        // Gibt den aktuellen Zeitstempel (UNIX-Zeit in Millisekunden) zurück
-        getCurrentTimestamp: function() {
-            return Date.now();
+// Warten, bis twSDK geladen ist, dann das Skript starten
+$.getScript(`https://twscripts.dev/scripts/twSDK.js?url=${document.currentScript.src}`, async function () {
+    await twSDK.init({ name: "Time Helper", version: "1.1.0", author: "Anzarion" });
+
+    console.log("⏳ timeHelper.js gestartet");
+
+    const timeHelper = {
+        /**
+         * 🕒 Konvertiert einen Zeitstring in ein Date-Objekt.
+         * @param {string} timeString - Zeitangabe aus dem Spiel.
+         * @returns {Date} Konvertiertes Date-Objekt.
+         */
+        parseGameTime: function (timeString) {
+            let [date, time] = timeString.split(" ");
+            let [day, month, year] = date.split("/").map(Number);
+            let [hours, minutes, seconds] = time.split(":").map(Number);
+            return new Date(year, month - 1, day, hours, minutes, seconds);
         },
 
-        // Prüft, ob ein gegebener Zeitstempel älter als eine bestimmte Anzahl von Stunden ist
-        isOlderThan: function(timestamp, hours) {
-            const now = Date.now();
-            const difference = now - timestamp;
-            const hoursInMilliseconds = hours * 60 * 60 * 1000;
-            return difference > hoursInMilliseconds;
+        /**
+         * ⏲ Berechnet die Zeitdifferenz zwischen zwei Zeitpunkten.
+         * @param {Date} past - Älterer Zeitpunkt.
+         * @param {Date} current - Neuerer Zeitpunkt.
+         * @returns {number} Differenz in Minuten.
+         */
+        getTimeDifferenceInMinutes: function (past, current = new Date()) {
+            return Math.round((current - past) / 60000);
         },
 
-        // Wandelt einen Zeitstempel in eine lesbare Datums- und Uhrzeitdarstellung um
-        formatTimestamp: function(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleString("de-DE", { 
-                day: "2-digit", month: "2-digit", year: "numeric",
-                hour: "2-digit", minute: "2-digit", second: "2-digit"
-            });
+        /**
+         * 🏷 Formatiert eine Zeitdifferenz in ein lesbares Format.
+         * @param {number} minutes - Minuten-Differenz.
+         * @returns {string} Formattierter Zeitstring.
+         */
+        formatTimeDifference: function (minutes) {
+            if (minutes < 60) return `${minutes} Min.`;
+            let hours = Math.floor(minutes / 60);
+            let remainingMinutes = minutes % 60;
+            return `${hours} Std. ${remainingMinutes} Min.`;
         }
     };
-})();
+
+    // Objekt global verfügbar machen
+    window.timeHelper = timeHelper;
+});
