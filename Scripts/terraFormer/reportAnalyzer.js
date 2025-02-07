@@ -2,7 +2,7 @@
  * 📜 reportAnalyzer.js
  * ====================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Analysiert Berichte in der Berichtsübersicht und speichert sie im LocalStorage.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/reportAnalyzer.js
  * 
@@ -12,6 +12,7 @@
  *  - Speichert relevante Berichte im LocalStorage für den Angriffmanager
  * 
  * Änderungen:
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Anpassung an terraFormer-Struktur mit twSDK
  *  - 1.0.0: Initiale Version mit Berichtsanalyse & Speicherung
  */

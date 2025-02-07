@@ -2,7 +2,7 @@
  * 📜 uiHelper.js
  * ====================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Hilfsfunktionen zur Erstellung von UI-Elementen.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/uiHelper.js
  * 
@@ -12,6 +12,7 @@
  *  - Bietet ein flexibles Layout für Spiel-Overlays
  * 
  * Änderungen:
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Integration von twSDK für verbesserte Struktur & Skriptverwaltung
  *  - 1.0.0: Initiale Version mit UI-Funktionen
  */

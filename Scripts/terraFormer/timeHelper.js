@@ -2,7 +2,7 @@
  * 📜 timeHelper.js
  * ====================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Hilfsfunktionen für Zeitstempel und Datumsberechnungen.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/timeHelper.js
  * 
@@ -12,6 +12,7 @@
  *  - Unterstützt Formatierungen für Anzeigezwecke
  * 
  * Änderungen:
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Integration von twSDK für zentrale Skriptverwaltung
  *  - 1.0.0: Initiale Version mit Zeit-Funktionen
  */

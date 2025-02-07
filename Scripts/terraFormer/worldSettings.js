@@ -2,13 +2,14 @@
  * 📜 worldSettings.js
  * ==================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Lädt und speichert Weltdaten (Gebäude, Einheiten, Einstellungen).
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/worldSettings.js
  * 
  * Änderungen:
- *  - 1.0.0: Initiale Version, lädt Welt-Daten über API.
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Anpassung an twSDK zur effizienten Datenverwaltung.
+ *  - 1.0.0: Initiale Version, lädt Welt-Daten über API.
  * 
  * =====================
  * // Vorherige Version 1.0.0:

@@ -2,13 +2,14 @@
  * 📜 farmAssist.js
  * ==================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Erfasst Berichte aus dem Farm-Assistenten und speichert relevante Daten im LocalStorage.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/farmAssist.js
  * 
  * Änderungen:
- *  - 1.0.0: Initiale Version, erkennt Berichte und speichert sie lokal.
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Integriert twSDK für verbesserte Speicherverwaltung und effizientere Verarbeitung.
+ *  - 1.0.0: Initiale Version, erkennt Berichte und speichert sie lokal.
  * 
  * =====================
  * // Vorherige Version 1.0.0:

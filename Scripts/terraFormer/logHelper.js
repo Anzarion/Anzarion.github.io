@@ -2,7 +2,7 @@
  * 📜 logHelper.js
  * ===============
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Logging- und Debugging-Helfer für bessere Fehleranalyse.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/logHelper.js
  * 
@@ -11,6 +11,7 @@
  *  - Möglichkeit zur Aktivierung eines Debug-Modus für erweiterte Logs
  * 
  * Änderungen:
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Integration von twSDK für erweiterte Debugging-Optionen
  *  - 1.0.0: Initiale Version mit Logging-Funktionen
  */

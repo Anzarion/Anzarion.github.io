@@ -2,13 +2,14 @@
  * 📜 attackManager.js
  * ==================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Steuert das Versenden von Angriffen, insbesondere Späherangriffe auf Barbarendörfer.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/attackManager.js
  * 
  * Änderungen:
- *  - 1.0.0: Initiale Version, ermöglicht das Versenden von Spähern.
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Anpassung an twSDK zum standardisierten Skriptladen.
+ *  - 1.0.0: Initiale Version, ermöglicht das Versenden von Spähern.
  * 
  * =====================
  * // Vorherige Version 1.0.0:

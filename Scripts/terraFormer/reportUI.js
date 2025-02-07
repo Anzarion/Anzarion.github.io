@@ -2,7 +2,7 @@
  * 📜 reportUI.js
  * ====================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Erstellt ein UI-Overlay zur Anzeige der analysierten Berichte.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/reportUI.js
  * 
@@ -12,6 +12,7 @@
  *  - Ermöglicht das erneute Scannen von Berichten oder das Senden von Spähern
  * 
  * Änderungen:
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Integriert twSDK für verbesserte Skriptverwaltung
  *  - 1.0.0: Initiale Version mit UI-Overlay und Buttons
  */

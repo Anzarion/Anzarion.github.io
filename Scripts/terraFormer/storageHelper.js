@@ -2,7 +2,7 @@
  * 📜 storageHelper.js
  * ====================
  * Autor:        Anzarion
- * Version:      1.1.0
+ * Version:      1.1.1
  * Beschreibung: Verwaltet LocalStorage-Daten für Berichte und andere Module.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/storageHelper.js
  * 
@@ -12,6 +12,7 @@
  *  - Bietet Methoden zum Löschen oder Aktualisieren gespeicherter Daten
  * 
  * Änderungen:
+ *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
  *  - 1.1.0: Integriert twSDK für verbesserte Skriptverwaltung
  *  - 1.0.0: Initiale Version mit LocalStorage-Funktionen
  */
