@@ -6,47 +6,36 @@
  * Beschreibung: Hauptskript zum Laden aller benötigten Module für das TW-Toolset.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer.js
  * 
- * Struktur:
- *  - Lädt `twSDK.js`, falls nicht vorhanden
- *  - Lädt Helferskripte (Storage, Zeit, UI, Requests, Logging)
- *  - Erkennt automatisch die aktuelle Spielseite und lädt passende Module
- * 
- * Benötigt: jQuery, twSDK
- * 
  * Änderungen:
- *  - 1.1.0: Nutzung von `twSDK.js`, bessere Kompatibilität mit Spiel-CSP
+ *  - 1.0.0: Initiale Version, erkennt FarmAssistent & Berichte automatisch.
+ *  - 1.1.0: Integriert twSDK für einheitliches Laden von Modulen.
+ * 
+ * =====================
+ * // Vorherige Version 1.0.0:
+ * (async function() {
+ *    console.log("🌍 terraFormer.js gestartet");
+ *    async function loadScript(name) { ... }
+ *    async function loadModules() { ... }
+ *    loadModules().catch(err => console.error(err));
+ * })();
+ * =====================
  */
 
 (async function () {
-    console.log("🌍 terraFormer.js gestartet");
+    console.log("🌍 Lade terraFormer.js...");
 
-    const BASE_URL = "https://anzarion.github.io/Scripts/terraFormer/";
-    const SDK_URL = "https://twscripts.dev/scripts/twSDK.js";
-
-    // Prüfen, ob `twSDK` bereits geladen ist
+    // Prüfen, ob twSDK geladen ist, falls nicht -> laden
     if (typeof twSDK === "undefined") {
-        console.log("🔄 Lade twSDK...");
-        await new Promise((resolve, reject) => {
-            $.getScript(SDK_URL, function () {
-                console.log("✅ twSDK geladen!");
-                resolve();
-            }).fail(() => reject("❌ Fehler beim Laden von twSDK"));
-        });
+        await $.getScript("https://twscripts.dev/scripts/twSDK.js");
+        await twSDK.init({ name: "terraFormer", version: "1.1.0" });
+        console.log("✅ twSDK erfolgreich geladen!");
     }
 
-    // Initialisiere `twSDK`
-    await twSDK.init({ name: "terraFormer", version: "1.1.0", author: "Anzarion" });
-
-    // Funktion zum Laden externer Skripte über `twSDK`
-    async function loadScript(name) {
-        return new Promise((resolve, reject) => {
-            $.getScript(BASE_URL + name)
-                .done(() => {
-                    console.log(`✅ Geladen: ${name}`);
-                    resolve();
-                })
-                .fail(() => reject(`❌ Fehler beim Laden von ${name}`));
-        });
+    // Hilfsfunktion zum Laden von Skripten
+    async function loadScript(scriptName) {
+        return twSDK.loadScript(`https://anzarion.github.io/Scripts/terraFormer/${scriptName}`)
+            .then(() => console.log(`✅ Geladen: ${scriptName}`))
+            .catch(err => console.error(`❌ Fehler beim Laden von ${scriptName}:`, err));
     }
 
     // Helferskripte laden
@@ -60,7 +49,7 @@
         console.log("✅ Helferskripte geladen");
     }
 
-    // Module basierend auf aktueller Seite laden
+    // Module je nach Seite laden
     async function loadModules() {
         const page = window.location.href;
 
@@ -76,12 +65,7 @@
         }
     }
 
-    // Skripte laden
-    try {
-        await loadHelpers();
-        await loadModules();
-        console.log("✅ terraFormer vollständig geladen!");
-    } catch (error) {
-        console.error(error);
-    }
+    // Starte das Laden aller Skripte
+    await loadHelpers();
+    await loadModules();
 })();
