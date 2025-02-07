@@ -1,39 +1,73 @@
 /**
- * 📝 logHelper.js
- * =====================
+ * 📜 logHelper.js
+ * ===============
  * Autor:        Anzarion
- * Version:      1.0.0
- * Beschreibung: Stellt Funktionen für einheitliches Logging bereit.
+ * Version:      1.1.0
+ * Beschreibung: Logging- und Debugging-Helfer für bessere Fehleranalyse.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/logHelper.js
  * 
  * Funktionen:
- *  - `logInfo(msg)`: Gibt eine normale Info-Nachricht aus.
- *  - `logWarn(msg)`: Gibt eine Warnung aus.
- *  - `logError(msg)`: Gibt eine Fehlermeldung aus.
- *  - `logDebug(msg)`: Gibt Debug-Informationen aus, wenn Debugging aktiviert ist.
+ *  - Standardisierte Logging-Funktionen (Info, Warnung, Fehler)
+ *  - Möglichkeit zur Aktivierung eines Debug-Modus für erweiterte Logs
  * 
  * Änderungen:
- *  - 1.0.0: Initiale Version mit grundlegenden Log-Methoden.
+ *  - 1.1.0: Integration von twSDK für erweiterte Debugging-Optionen
+ *  - 1.0.0: Initiale Version mit Logging-Funktionen
  */
 
-const logHelper = (() => {
-    const DEBUG_MODE = true; // Setze auf false, um Debug-Logs zu deaktivieren
+// Warten, bis twSDK geladen ist, dann das Skript starten
+$.getScript(`https://twscripts.dev/scripts/twSDK.js?url=${document.currentScript.src}`, async function () {
+    await twSDK.init({ name: "Log Helper", version: "1.1.0", author: "Anzarion" });
 
-    return {
-        logInfo: function(msg) {
-            console.log(`ℹ️ [INFO] ${msg}`);
+    console.log("📝 logHelper.js gestartet");
+
+    const logHelper = {
+        debugMode: false, // Debugging standardmäßig deaktiviert
+
+        /**
+         * 🟢 Info-Log-Nachricht ausgeben.
+         * @param {string} message - Die auszugebende Nachricht.
+         */
+        info: function (message) {
+            console.log(`ℹ️ [INFO]: ${message}`);
         },
 
-        logWarn: function(msg) {
-            console.warn(`⚠️ [WARN] ${msg}`);
+        /**
+         * 🟡 Warnung-Log-Nachricht ausgeben.
+         * @param {string} message - Die auszugebende Warnung.
+         */
+        warn: function (message) {
+            console.warn(`⚠️ [WARNUNG]: ${message}`);
         },
 
-        logError: function(msg) {
-            console.error(`❌ [ERROR] ${msg}`);
+        /**
+         * 🔴 Fehler-Log-Nachricht ausgeben.
+         * @param {string} message - Die auszugebende Fehlernachricht.
+         */
+        error: function (message) {
+            console.error(`❌ [FEHLER]: ${message}`);
         },
 
-        logDebug: function(msg) {
-            if (DEBUG_MODE) console.debug(`🐛 [DEBUG] ${msg}`);
+        /**
+         * 🔵 Debug-Log-Nachricht ausgeben (nur bei aktiviertem Debug-Modus).
+         * @param {string} message - Die auszugebende Debug-Nachricht.
+         */
+        debug: function (message) {
+            if (this.debugMode) {
+                console.log(`🐞 [DEBUG]: ${message}`);
+            }
+        },
+
+        /**
+         * 🔄 Debug-Modus umschalten.
+         * @param {boolean} status - True = aktivieren, False = deaktivieren.
+         */
+        toggleDebug: function (status) {
+            this.debugMode = status;
+            console.log(`🔧 Debug-Modus: ${status ? "AKTIVIERT" : "DEAKTIVIERT"}`);
         }
     };
-})();
+
+    // Objekt global verfügbar machen
+    window.logHelper = logHelper;
+});
