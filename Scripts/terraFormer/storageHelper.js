@@ -1,51 +1,62 @@
 /**
- * 💾 storageHelper.js
- * =====================
+ * 📜 storageHelper.js
+ * ====================
  * Autor:        Anzarion
- * Version:      1.0.0
- * Beschreibung: Stellt Funktionen zum Speichern und Laden von Daten im localStorage bereit.
+ * Version:      1.1.0
+ * Beschreibung: Verwaltet LocalStorage-Daten für Berichte und andere Module.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/storageHelper.js
  * 
  * Funktionen:
- *  - `saveToStorage(key, data)`: Speichert Daten im localStorage.
- *  - `loadFromStorage(key)`: Lädt Daten aus dem localStorage.
- *  - `clearStorage(key)`: Löscht einen bestimmten Eintrag im localStorage.
+ *  - Speichert und liest Berichte aus dem LocalStorage
+ *  - Verhindert doppelte Einträge durch intelligente Updates
+ *  - Bietet Methoden zum Löschen oder Aktualisieren gespeicherter Daten
  * 
  * Änderungen:
- *  - 1.0.0: Initiale Version mit Grundfunktionen für Speicherverwaltung
+ *  - 1.1.0: Integriert twSDK für verbesserte Skriptverwaltung
+ *  - 1.0.0: Initiale Version mit LocalStorage-Funktionen
  */
 
-const storageHelper = (() => {
-    return {
-        // Speichert Daten im localStorage unter einem bestimmten Schlüssel
-        saveToStorage: function(key, data) {
-            try {
-                localStorage.setItem(key, JSON.stringify(data));
-                console.log(`💾 Gespeichert unter: ${key}`, data);
-            } catch (error) {
-                console.error(`❌ Fehler beim Speichern in localStorage: ${error}`);
-            }
+// Warten, bis twSDK geladen ist, dann das Skript starten
+$.getScript(`https://twscripts.dev/scripts/twSDK.js?url=${document.currentScript.src}`, async function () {
+    await twSDK.init({ name: "Storage Helper", version: "1.1.0", author: "Anzarion" });
+
+    console.log("💾 storageHelper.js gestartet");
+
+    const STORAGE_KEY = "analyzedReports";
+
+    const storageHelper = {
+        /**
+         * 🔍 Holt alle gespeicherten Berichte aus dem LocalStorage.
+         * @returns {Array} Gespeicherte Berichte oder leeres Array
+         */
+        getReports: function () {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         },
 
-        // Lädt Daten aus dem localStorage, falls vorhanden
-        loadFromStorage: function(key) {
-            try {
-                let data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : null;
-            } catch (error) {
-                console.error(`❌ Fehler beim Laden aus localStorage: ${error}`);
-                return null;
-            }
+        /**
+         * 💾 Speichert neue Berichte im LocalStorage, verhindert doppelte Einträge.
+         * @param {Array} reports - Neue Berichte, die gespeichert werden sollen.
+         */
+        saveReports: function (reports) {
+            let storedReports = storageHelper.getReports();
+            let updatedReports = [...storedReports, ...reports];
+
+            // Doppelte URLs entfernen
+            let uniqueReports = Array.from(new Map(updatedReports.map(r => [r.url, r])).values());
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(uniqueReports));
+            console.log(`💾 ${reports.length} neue Berichte gespeichert.`);
         },
 
-        // Löscht einen bestimmten Schlüssel aus dem localStorage
-        clearStorage: function(key) {
-            try {
-                localStorage.removeItem(key);
-                console.log(`🗑 Gelöscht: ${key}`);
-            } catch (error) {
-                console.error(`❌ Fehler beim Löschen aus localStorage: ${error}`);
-            }
+        /**
+         * 🗑 Löscht alle gespeicherten Berichte aus dem LocalStorage.
+         */
+        clearReports: function () {
+            localStorage.removeItem(STORAGE_KEY);
+            console.log("🗑 Alle gespeicherten Berichte wurden gelöscht.");
         }
     };
-})();
+
+    // Objekt global verfügbar machen
+    window.storageHelper = storageHelper;
+});
