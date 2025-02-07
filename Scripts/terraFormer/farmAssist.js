@@ -7,7 +7,20 @@
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/farmAssist.js
  * 
  * Änderungen:
- *  - 1.1.0: Integriert twSDK für effizientere LocalStorage-Verwaltung.
+ *  - 1.0.0: Initiale Version, erkennt Berichte und speichert sie lokal.
+ *  - 1.1.0: Integriert twSDK für verbesserte Speicherverwaltung und effizientere Verarbeitung.
+ * 
+ * =====================
+ * // Vorherige Version 1.0.0:
+ * (async function() {
+ *    console.log("🌾 farmAssist.js gestartet");
+ *    const STORAGE_KEY = "farmReports";
+ *    function getFarmReports() { ... }
+ *    function saveReportsToStorage(reports) { ... }
+ *    let reports = getFarmReports();
+ *    saveReportsToStorage(reports);
+ * })();
+ * =====================
  */
 
 (async function () {
@@ -16,7 +29,7 @@
     const STORAGE_KEY = "farmReports";
     const REPORT_SELECTOR = "#plunder_list tr";
 
-    // Prüfen, ob twSDK bereits geladen ist, falls nicht -> laden
+    // Prüfen, ob twSDK geladen ist, falls nicht -> laden
     if (typeof twSDK === "undefined") {
         await $.getScript("https://twscripts.dev/scripts/twSDK.js");
         await twSDK.init({ name: "farmAssist", version: "1.1.0" });
@@ -24,7 +37,7 @@
     }
 
     /**
-     * Funktion zum Abrufen der Berichte aus dem Farm-Assistenten.
+     * Sammelt Berichte aus dem Farm-Assistenten.
      */
     function getFarmReports() {
         let reports = [];
@@ -37,6 +50,7 @@
 
             if (linkElem && timeElem) {
                 let report = {
+                    id: new URL(linkElem.href).searchParams.get("view"),
                     url: linkElem.href,
                     coords: linkElem.textContent.trim(),
                     time: new Date(timeElem.textContent.trim()),
@@ -51,11 +65,11 @@
     }
 
     /**
-     * Speichert Berichte im LocalStorage, wenn sie nicht bereits existieren.
+     * Speichert die Berichte im LocalStorage.
      */
     function saveReportsToStorage(reports) {
         let storedData = twSDK.getLocalStorage(STORAGE_KEY, []);
-        let newReports = reports.filter(report => !storedData.some(r => r.url === report.url));
+        let newReports = reports.filter(report => !storedData.some(r => r.id === report.id));
 
         if (newReports.length > 0) {
             let updatedReports = [...storedData, ...newReports];
@@ -69,5 +83,4 @@
     // Berichte erfassen & speichern
     let reports = getFarmReports();
     saveReportsToStorage(reports);
-
 })();
