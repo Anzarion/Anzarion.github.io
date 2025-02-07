@@ -1,59 +1,66 @@
 /**
- * 🌐 requestHelper.js
- * =====================
+ * 📜 requestHelper.js
+ * ====================
  * Autor:        Anzarion
- * Version:      1.0.0
- * Beschreibung: Stellt Funktionen zur Durchführung von HTTP-Requests bereit.
+ * Version:      1.1.0
+ * Beschreibung: Hilfsfunktionen für AJAX- und API-Anfragen.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/requestHelper.js
  * 
  * Funktionen:
- *  - `fetchHTML(url)`: Lädt HTML-Inhalte einer Seite per Fetch-Request.
- *  - `fetchJSON(url)`: Führt einen HTTP-Request aus und gibt die JSON-Daten zurück.
- *  - `postData(url, data)`: Sendet Daten per POST an eine API oder ein Script.
+ *  - Führt GET- und POST-Anfragen mit Fetch API durch
+ *  - Stellt flexible Wrapper für API-Anfragen bereit
  * 
  * Änderungen:
- *  - 1.0.0: Initiale Version mit grundlegenden HTTP-Methoden.
+ *  - 1.1.0: Integration von twSDK für verbesserte Struktur & Fehlerbehandlung
+ *  - 1.0.0: Initiale Version mit Basis-GET- und POST-Methoden
  */
 
-const requestHelper = (() => {
-    return {
-        // Lädt HTML-Inhalte von einer URL
-        fetchHTML: async function(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Fehler beim Abrufen von ${url}`);
-                return await response.text();
-            } catch (error) {
-                console.error(`❌ fetchHTML Fehler: ${error}`);
-                return null;
-            }
-        },
+// Warten, bis twSDK geladen ist, dann das Skript starten
+$.getScript(`https://twscripts.dev/scripts/twSDK.js?url=${document.currentScript.src}`, async function () {
+    await twSDK.init({ name: "Request Helper", version: "1.1.0", author: "Anzarion" });
 
-        // Lädt JSON-Daten von einer API oder einem Endpunkt
-        fetchJSON: async function(url) {
+    console.log("📡 requestHelper.js gestartet");
+
+    const requestHelper = {
+        /**
+         * 📨 Führt eine GET-Anfrage durch.
+         * @param {string} url - Die URL der Anfrage.
+         * @returns {Promise<any>} Die Antwort der Anfrage.
+         */
+        get: async function (url) {
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Fehler beim Abrufen von ${url}`);
+                let response = await fetch(url, { method: "GET", credentials: "include" });
+                if (!response.ok) throw new Error(`❌ Fehler bei GET ${url}`);
                 return await response.json();
             } catch (error) {
-                console.error(`❌ fetchJSON Fehler: ${error}`);
+                console.error(error);
                 return null;
             }
         },
 
-        // Sendet JSON-Daten per POST-Request
-        postData: async function(url, data) {
+        /**
+         * 📤 Führt eine POST-Anfrage durch.
+         * @param {string} url - Die URL der Anfrage.
+         * @param {Object} data - Die zu sendenden Daten.
+         * @returns {Promise<any>} Die Antwort der Anfrage.
+         */
+        post: async function (url, data) {
             try {
-                const response = await fetch(url, {
+                let response = await fetch(url, {
                     method: "POST",
+                    credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data)
                 });
+                if (!response.ok) throw new Error(`❌ Fehler bei POST ${url}`);
                 return await response.json();
             } catch (error) {
-                console.error(`❌ postData Fehler: ${error}`);
+                console.error(error);
                 return null;
             }
         }
     };
-})();
+
+    // Objekt global verfügbar machen
+    window.requestHelper = requestHelper;
+});
