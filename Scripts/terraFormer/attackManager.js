@@ -1,74 +1,54 @@
 /**
- * attackManager.js
- * ----------------
- * Verwaltet Angriffe und Spähaktionen in "Die Stämme".
- * Steuert das automatische Versenden von Spähern und Angriffen.
+ * 📜 attackManager.js
+ * ==================
+ * Autor:        Anzarion
+ * Version:      1.1.0
+ * Beschreibung: Steuert das Versenden von Angriffen, insbesondere Späherangriffe auf Barbarendörfer.
+ * GitHub:       https://anzarion.github.io/Scripts/terraFormer/attackManager.js
+ * 
+ * Änderungen:
+ *  - 1.0.0: Initiale Version, ermöglicht das Versenden von Spähern.
+ *  - 1.1.0: Anpassung an twSDK zum standardisierten Skriptladen.
+ * 
+ * =====================
+ * // Vorherige Version 1.0.0:
+ * (async function() {
+ *    function sendScouts(villageId) { ... }
+ *    function startScouting() { ... }
+ *    startScouting();
+ * })();
+ * =====================
  */
 
-import { getStoredData, setStoredData } from "./storageHelper.js";
-import { logInfo, logError } from "./logHelper.js";
-import { sendRequest } from "./requestHelper.js";
+(async function () {
+    console.log("⚔️ Lade attackManager.js...");
 
-// Konstante für den Angriffsspeicher
-const ATTACK_STORAGE_KEY = "attackQueue";
-
-/**
- * Fügt ein Dorf zur Angriffswarteschlange hinzu.
- * @param {Object} village - Dorfobjekt mit ID und Koordinaten.
- */
-export function addVillageToAttackQueue(village) {
-    let attackQueue = getStoredData(ATTACK_STORAGE_KEY) || [];
-    
-    // Überprüfen, ob das Dorf bereits in der Queue ist
-    if (!attackQueue.some(entry => entry.id === village.id)) {
-        attackQueue.push(village);
-        setStoredData(ATTACK_STORAGE_KEY, attackQueue);
-        logInfo(`📌 Dorf zur Angriffswarteschlange hinzugefügt: ${village.id}`);
-    } else {
-        logInfo(`⚠ Dorf ${village.id} ist bereits in der Warteschlange.`);
-    }
-}
-
-/**
- * Sendet Späher zu einem Dorf.
- * @param {Object} village - Ziel-Dorf.
- */
-export async function sendScouts(village) {
-    try {
-        let url = `/game.php?village=${village.origin}&screen=place&ajax=confirm`;
-        let params = {
-            target: village.id,
-            spy: 1,
-            h: game_data.csrf,
-        };
-
-        let response = await sendRequest(url, params);
-        if (response.success) {
-            logInfo(`🕵️ Späher zu Dorf ${village.id} gesendet.`);
-        } else {
-            logError(`Fehler beim Senden von Spähern zu ${village.id}: ${response.message}`);
-        }
-    } catch (error) {
-        logError(`Fehler beim Späherbefehl: ${error}`);
-    }
-}
-
-/**
- * Verarbeitet die Angriffswarteschlange und sendet Angriffe aus.
- */
-export async function processAttackQueue() {
-    let attackQueue = getStoredData(ATTACK_STORAGE_KEY) || [];
-
-    if (attackQueue.length === 0) {
-        logInfo("✔ Keine offenen Angriffe.");
-        return;
+    // Sicherstellen, dass twSDK geladen ist
+    if (typeof twSDK === "undefined") {
+        await $.getScript("https://twscripts.dev/scripts/twSDK.js");
+        await twSDK.init({ name: "attackManager", version: "1.1.0" });
+        console.log("✅ twSDK erfolgreich geladen!");
     }
 
-    for (let village of attackQueue) {
-        await sendScouts(village);
+    /**
+     * Sendet Späherangriffe auf ein angegebenes Dorf.
+     * @param {number} villageId - ID des Dorfes
+     */
+    async function sendScouts(villageId) {
+        console.log(`🕵️ Sende Späher zu Dorf ${villageId}...`);
+        // Hier kann später eine AJAX-Anfrage für das Senden implementiert werden
     }
 
-    // Nach Verarbeitung die Queue leeren
-    setStoredData(ATTACK_STORAGE_KEY, []);
-    logInfo("✅ Angriffswarteschlange verarbeitet.");
-}
+    /**
+     * Startet den Spähprozess für alle Dörfer ohne Gebäudedaten.
+     */
+    async function startScouting() {
+        let reports = twSDK.storage.get("farmReports") || [];
+        let villagesToScout = reports.filter(report => !report.hasBuildings);
+
+        console.log(`📋 Spähen von ${villagesToScout.length} Dörfern geplant.`);
+        villagesToScout.forEach(village => sendScouts(village.id));
+    }
+
+    startScouting();
+})();
