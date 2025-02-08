@@ -333,13 +333,11 @@
          * @param {number} index - Der aktuelle Fortschritt (0-basiert).
          * @param {number} total - Die Gesamtanzahl der Schritte.
          */
-        updateProgressBar(index, total) {
-            const progress = ((index + 1) / total) * 100;
-            jQuery("#progress").css("width", `${progress}%`);
-            jQuery("#progressLabel").text(`${index + 1}/${total}`);
-            console.log("Progress updated to", `${index + 1}/${total}`);
-            if (index + 1 === total) {
-                jQuery("#progressbar").fadeOut(1000);
+        updateProgressBar: function (index, total) {
+            jQuery('#progress').css('width', `${((index + 1) / total) * 100}%`);
+            jQuery('.count').text(`${index + 1}/${total}`);
+            if (index + 1 == total) {
+                jQuery('#progressbar').fadeOut(1000);
             }
         },
 
