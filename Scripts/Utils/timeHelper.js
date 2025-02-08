@@ -25,7 +25,7 @@
          * Unterstützt Formate wie:
          * - "today at HH:MM:SS"
          * - "yesterday at HH:MM:SS"
-         * - "on DD.MM. at HH:MM:SS"
+         * - "on DD.MM. at HH:MM:SS" (mit optionalem Punkt nach dem Monat)
          * Falls der String in keinem dieser Formate vorliegt, wird versucht, ihn direkt zu parsen.
          *
          * @param {string} timeStr - Der zu parsende Zeit-String.
@@ -63,8 +63,8 @@
                     return null;
                 }
             } else if (str.includes("on ")) {
-                // Erwartetes Format: "on DD.MM. at HH:MM:SS"
-                const match = str.match(/on\s+(\d{1,2})\.(\d{1,2})\.\s+at\s+(\d{1,2}:\d{2}:\d{2})/);
+                // Erwartetes Format: "on DD.MM. at HH:MM:SS" – der Punkt nach dem Monat ist optional
+                const match = str.match(/on\s+(\d{1,2})\.(\d{1,2})\.?\s+at\s+(\d{1,2}:\d{2}:\d{2})/);
                 if (match) {
                     const day = Number(match[1]);
                     const month = Number(match[2]) - 1; // Monate in JS sind 0-indexiert
