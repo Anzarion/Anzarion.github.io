@@ -14,7 +14,7 @@
  *  - createModal, showModal, hideModal,
  *  - attachTooltip,
  *  - registerResponsiveHandler, removeResponsiveHandler,
- *  - createProgressBar, updateProgressBar, removeProgressBar,
+ *  - createProgressBar, updateProgressBar,
  *  - addGlobalStyle, renderFixedWidget, tt
  */
 
@@ -22,6 +22,9 @@
     'use strict';
 
     const uiHelper = {
+        // Eigenschaft zur Erkennung mobiler Geräte
+        isMobile: (document.getElementById("mobileHeader") !== null),
+
         // ---------------- Basisfunktionen ----------------
 
         /**
@@ -30,7 +33,7 @@
          * @param {Object} [options={}] - Optionen:
          *   - id {string} (optional)
          *   - classes {Array<string>} (optional)
-         *   - attributes {object} (optional, z. B. { "data-type": "example" })
+         *   - attributes {Object} (optional, z. B. { "data-type": "example" })
          *   - innerHTML {string} (optional)
          * @returns {HTMLElement} Das erzeugte Element.
          */
@@ -145,7 +148,7 @@
          * Erzeugt eine Tabelle aus einem Array von Objekten.
          * @param {Array<Object>} data - Array von Zeilen-Objekten.
          * @param {Array<string>} columns - Spaltennamen (Schlüssel in den Objekten).
-         * @param {Object} [options={}] - Zusätzliche Optionen (z.B. CSS-Klassen).
+         * @param {Object} [options={}] - Zusätzliche Optionen (z. B. CSS-Klassen).
          * @returns {HTMLTableElement} Die erzeugte Tabelle.
          */
         createTable(data, columns, options = {}) {
@@ -174,9 +177,9 @@
         },
 
         /**
-         * Fügt einen Event-Listener hinzu.
+         * Fügt einen Event-Listener zu einem Element hinzu.
          * @param {HTMLElement} element - Das Ziel-Element.
-         * @param {string} event - Der Eventname (z.B. "click").
+         * @param {string} event - Der Eventname (z. B. "click").
          * @param {function} handler - Die Event-Handler-Funktion.
          */
         attachEvent(element, event, handler) {
@@ -186,7 +189,7 @@
         },
 
         /**
-         * Entfernt einen Event-Listener.
+         * Entfernt einen Event-Listener von einem Element.
          * @param {HTMLElement} element - Das Ziel-Element.
          * @param {string} event - Der Eventname.
          * @param {function} handler - Die zu entfernende Funktion.
@@ -230,8 +233,8 @@
         },
 
         /**
-         * Zeigt ein modales Fenster an.
-         * @param {Object} modalObj - Das Objekt von createModal.
+         * Zeigt ein modales Fenster an, indem es dem Dokument hinzugefügt wird.
+         * @param {Object} modalObj - Das Objekt, das von createModal zurückgegeben wurde.
          */
         showModal(modalObj) {
             document.body.appendChild(modalObj.overlay);
@@ -239,8 +242,8 @@
         },
 
         /**
-         * Entfernt ein modales Fenster.
-         * @param {Object} modalObj - Das Objekt von createModal.
+         * Entfernt ein modales Fenster aus dem DOM.
+         * @param {Object} modalObj - Das Objekt, das von createModal zurückgegeben wurde.
          */
         hideModal(modalObj) {
             if (modalObj.overlay.parentNode) {
@@ -298,63 +301,50 @@
         // ---------------- Dynamische Fortschrittsbalken ----------------
 
         /**
-         * Erzeugt einen Fortschrittsbalken.
-         * Es werden keine festen Inline-Stile außer der Höhe gesetzt, damit die
-         * spieleigenen CSS-Stile verwendet werden.
-         * @param {Object} [options={}] - Optionen:
-         *   - id {string} (optional)
-         *   - classes {Array<string>} (optional)
-         *   - initialProgress {number} (optional, Standard: 0, als Prozentwert)
-         * @returns {Object} Ein Objekt mit { container, bar, progressLabel }.
+         * Erzeugt einen Fortschrittsbalken, der die spieleigenen CSS‑Stile verwendet.
+         * Die Struktur entspricht der progressbar-Funktionalität:
+         * Ein äußerer Container mit ID "progressbar" und Klasse "progress-bar",
+         * ein inneres Div mit ID "progress" und ein Label mit ID "progressLabel".
+         * @param {number} total - Die Gesamtanzahl an Schritten (z.B. Gesamtberichte).
+         * @returns {Object} Ein Objekt mit den DOM-Elementen { container, fill, label }.
          */
-        createProgressBar(options = {}) {
-            const container = this.createElement("div", { 
-                id: options.id, 
-                classes: ["progress-bar-container"].concat(options.classes || [])
-            });
-            // Wir setzen hier nur die Höhe; der Rest der Styles wird von den Spiele-CSS-Regeln übernommen.
-            container.style.height = "20px";
-            // Erzeuge den Balken; hier wird nur die Breite dynamisch gesetzt.
-            const bar = this.createElement("div", { 
-                classes: ["progress-bar"], 
-                attributes: { "role": "progressbar" }
-            });
-            bar.style.width = (options.initialProgress || 0) + "%";
-            container.appendChild(bar);
-            // Erzeuge ein Label zur Anzeige des Fortschritts (z.B. "0%").
-            const progressLabel = this.createElement("span", { 
-                classes: ["count", "label"],
-                innerHTML: (options.initialProgress || 0) + "%"
-            });
-            progressLabel.style.position = "absolute";
-            progressLabel.style.width = "100%";
-            progressLabel.style.textAlign = "center";
-            progressLabel.style.lineHeight = "inherit";
-            container.appendChild(progressLabel);
-            return { container, bar, progressLabel };
-        },
-
-        /**
-         * Aktualisiert den Fortschrittsbalken, indem die Breite des Balkens und das Label aktualisiert werden.
-         * @param {Object} progressBarObj - Das Objekt von createProgressBar.
-         * @param {number} progress - Der neue Fortschrittswert (als Prozentwert).
-         */
-        updateProgressBar(progressBarObj, progress) {
-            if (progressBarObj && progressBarObj.bar) {
-                progressBarObj.bar.style.width = progress + "%";
-                if (progressBarObj.progressLabel) {
-                    progressBarObj.progressLabel.textContent = progress + "%";
-                }
+        createProgressBar(total) {
+            const width = jQuery('#content_value')[0].clientWidth;
+            const preloaderContent = `
+                <div id="progressbar" class="progress-bar" style="margin-bottom:12px; position: relative;">
+                    <span class="count label" id="progressLabel">0/${total}</span>
+                    <div id="progress" style="width: 0%;">
+                        <span class="count label" style="width: ${width}px;"></span>
+                    </div>
+                </div>
+            `;
+    
+            // Füge den Fortschrittsbalken in den entsprechenden Container ein
+            if (this.isMobile) {
+                jQuery('#content_value').eq(0).prepend(preloaderContent);
+            } else {
+                jQuery('#contentContainer').eq(0).prepend(preloaderContent);
             }
+    
+            return {
+                container: document.getElementById("progressbar"),
+                fill: document.getElementById("progress"),
+                label: document.getElementById("progressLabel")
+            };
         },
 
         /**
-         * Entfernt einen Fortschrittsbalken aus dem DOM.
-         * @param {Object} progressBarObj - Das Objekt von createProgressBar.
+         * Aktualisiert den Fortschrittsbalken, indem die Breite des Füll-Divs und das Label gesetzt werden.
+         * @param {number} index - Der aktuelle Fortschritt (0-basiert).
+         * @param {number} total - Die Gesamtanzahl der Schritte.
          */
-        removeProgressBar(progressBarObj) {
-            if (progressBarObj && progressBarObj.container && progressBarObj.container.parentNode) {
-                progressBarObj.container.parentNode.removeChild(progressBarObj.container);
+        updateProgressBar(index, total) {
+            const progress = ((index + 1) / total) * 100;
+            jQuery("#progress").css("width", `${progress}%`);
+            jQuery("#progressLabel").text(`${index + 1}/${total}`);
+            console.log("Progress updated to", `${index + 1}/${total}`);
+            if (index + 1 === total) {
+                jQuery("#progressbar").fadeOut(1000);
             }
         },
 
@@ -362,7 +352,7 @@
 
         /**
          * Liefert globale CSS-Regeln für UI-Widgets.
-         * @returns {string} CSS-Regeln als String.
+         * @returns {string} Die CSS-Regeln als String.
          */
         addGlobalStyle() {
             return `
@@ -391,7 +381,7 @@
          * @param {string} mainClass - Eine Basisklasse für das Widget.
          * @param {string} customStyle - Zusätzliche CSS-Regeln als String.
          * @param {string} width - Die Breite des Widgets (z. B. "360px").
-         * @param {string} [customName="Widget"] - Der Name, der im Header angezeigt wird.
+         * @param {string} [customName="Widget"] - Der im Header angezeigte Name.
          * @returns {HTMLElement} Das gerenderte Widget.
          */
         renderFixedWidget(body, id, mainClass, customStyle, width, customName = "Widget") {
@@ -439,14 +429,14 @@
     
             if (window.jQuery) {
                 if (jQuery(`#${id}`).length < 1) {
-                    if (global.mobiledevice) {
+                    if (this.isMobile) {
                         jQuery('#content_value').prepend(content);
                     } else {
                         jQuery('#contentContainer').prepend(content);
                         jQuery(`#${id}`).draggable({
-                            cancel: '.ra-table, input, textarea, button, select, option',
+                            cancel: '.ra-table, input, textarea, button, select, option'
                         });
-                        jQuery(`#${id} .custom-close-button`).on('click', function (e) {
+                        jQuery(`#${id} .custom-close-button`).on('click', function(e) {
                             e.preventDefault();
                             jQuery(`#${id}`).remove();
                         });
