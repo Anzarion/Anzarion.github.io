@@ -2,69 +2,79 @@
  * 📜 reportAnalyzer.js
  * ====================
  * Autor:        Anzarion
- * Version:      1.1.1
- * Beschreibung: Analysiert Berichte in der Berichtsübersicht und speichert sie im LocalStorage.
+ * Version:      1.3.0
+ * Beschreibung: Analysiert Berichte in der Berichtsübersicht und speichert sie im Storage.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/reportAnalyzer.js
- * 
- * Funktionen:
- *  - Liest Berichte auf der Berichtsübersicht aus
- *  - Unterscheidet zwischen Berichten mit/ohne Gebäudedaten
- *  - Speichert relevante Berichte im LocalStorage für den Angriffmanager
- * 
+ *
  * Änderungen:
- *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet).
- *  - 1.1.0: Anpassung an terraFormer-Struktur mit twSDK
- *  - 1.0.0: Initiale Version mit Berichtsanalyse & Speicherung
+ *  - 1.3.0: Reintegriert spezifische Speicherfunktionen für Berichte.
+ *  - 1.2.0: Nutzung von `storageHelper` für LocalStorage-Verwaltung.
+ *  - 1.1.0: Erstmalige Integration mit `twSDK`.
+ *  - 1.0.0: Initiale Version mit Berichtsanalyse & Speicherung.
  */
 
-(async function () {
-    console.log("📜 reportAnalyzer.js gestartet");
+console.log("📜 reportAnalyzer.js gestartet");
 
-    // Sicherstellen, dass twSDK geladen ist
-    await twSDK.init();
+// **Globale Konstante für den Speicherschlüssel**
+const STORAGE_KEY = "analyzedReports";
 
-    // LocalStorage Key für Berichte
-    const STORAGE_KEY = "analyzedReports";
+/**
+ * 🔍 Holt alle gespeicherten Berichte aus dem Storage.
+ * @returns {Array} Gespeicherte Berichte oder leeres Array.
+ */
+function getReports() {
+    return storageHelper.loadFromStorage(STORAGE_KEY) || [];
+}
 
-    // Selektor für Berichtszeilen in der Übersicht
-    const REPORT_SELECTOR = "#report_list tr";
+/**
+ * 💾 Speichert neue Berichte im Storage und verhindert doppelte Einträge.
+ * @param {Array} reports - Neue Berichte, die gespeichert werden sollen.
+ */
+function saveReports(reports) {
+    let storedReports = getReports();
+    let updatedReports = [...storedReports, ...reports];
 
-    // Funktion zum Analysieren der Berichte
-    function analyzeReports() {
-        let reports = [];
-        
-        document.querySelectorAll(REPORT_SELECTOR).forEach(row => {
-            let linkElem = row.querySelector("td:nth-child(3) a");
-            let timeElem = row.querySelector("td:nth-child(4)");
-            let buildingDataElem = row.querySelector("td:nth-child(5) img");
+    // 🛠️ Doppelte Berichte anhand der URL entfernen
+    let uniqueReports = Array.from(new Map(updatedReports.map(r => [r.url, r])).values());
 
-            if (linkElem && timeElem) {
-                let report = {
-                    url: linkElem.href,
-                    coords: linkElem.textContent.trim(),
-                    time: new Date(timeElem.textContent.trim()),
-                    hasBuildingInfo: !!buildingDataElem,
-                };
-                reports.push(report);
-            }
-        });
+    storageHelper.saveToStorage(STORAGE_KEY, uniqueReports);
+    console.log(`💾 ${reports.length} neue Berichte gespeichert.`);
+}
 
-        return reports;
-    }
+/**
+ * 🗑 Löscht alle gespeicherten Berichte aus dem Storage.
+ */
+function clearReports() {
+    storageHelper.removeFromStorage(STORAGE_KEY);
+    console.log("🗑 Alle gespeicherten Berichte wurden gelöscht.");
+}
 
-    // Funktion zum Speichern der analysierten Berichte
-    function saveReports(reports) {
-        let storedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        let updatedReports = [...storedReports, ...reports];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReports));
-        console.log(`💾 ${reports.length} Berichte gespeichert.`);
-    }
+// **Hauptfunktion zur Berichtsanalyse**
+function analyzeReports() {
+    let reports = [];
 
-    // Berichte erfassen & speichern
-    let reports = analyzeReports();
+    document.querySelectorAll("#report_list tr").forEach(row => {
+        let linkElem = row.querySelector("td:nth-child(3) a");
+        let timeElem = row.querySelector("td:nth-child(4)");
+        let buildingDataElem = row.querySelector("td:nth-child(5) img");
+
+        if (linkElem && timeElem) {
+            let report = {
+                url: linkElem.href,
+                coords: linkElem.textContent.trim(),
+                time: new Date(timeElem.textContent.trim()),
+                hasBuildingInfo: !!buildingDataElem,
+            };
+            reports.push(report);
+        }
+    });
+
     if (reports.length > 0) {
         saveReports(reports);
     } else {
         console.log("⚠ Keine neuen Berichte gefunden.");
     }
-})();
+}
+
+// **Automatisch starten**
+analyzeReports();
