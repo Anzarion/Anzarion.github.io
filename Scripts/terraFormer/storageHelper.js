@@ -2,21 +2,23 @@
  * 📜 storageHelper.js
  * ====================
  * Autor:        Anzarion
- * Version:      1.3.2
- * Beschreibung: Verwaltet Storage-Daten für Scripte und Module.
+ * Version:      1.3.3
+ * Beschreibung: Verwaltet LocalStorage-Daten für Berichte und andere Module.
  * GitHub:       https://anzarion.github.io/Scripts/terraFormer/storageHelper.js
  * 
  * Funktionen:
- *  - Unterstützt verschiedene Speichertypen (Permanent, Session, mit Ablaufzeit)
- *  - Verhindert doppelte Einträge durch intelligente Updates
- *  - Bietet Methoden zum Löschen oder Aktualisieren gespeicherter Daten
- *  - Nutzt `window.TW_DEBUG`, um Debugging flexibel zu steuern
+ *  - Speichert und liest Berichte aus LocalStorage und SessionStorage.
+ *  - Unterstützt verschiedene Speichertypen (Permanent, Session, mit Ablaufzeit).
+ *  - Verhindert doppelte Einträge durch intelligente Updates.
+ *  - Bietet Methoden zum Löschen oder Aktualisieren gespeicherter Daten.
+ *  - Nutzt `window.TW_DEBUG`, um Debugging flexibel zu steuern.
  * 
  * Änderungen:
- *  - 1.3.2: Fügt zentrale **Speicherverwaltungsmethoden** (`getStorage`, `parseJSON`) hinzu.
- *  - 1.3.1: **Optimierung des Update-Mechanismus**, bessere Debug-Logs für TTL-Löschungen.
- *  - 1.3.0: **Zentraler Debug-Modus** über `window.TW_DEBUG` eingeführt.
- *  - 1.2.0: **Unterstützung für TTL (Ablaufzeit) und SessionStorage** hinzugefügt.
+ *  - 1.3.3: **Zentrale Verwaltung von STORAGE_KEYS für alle Skripte hinzugefügt.**
+ *  - 1.3.2: Ergänzung von `getStorage()` und `parseJSON()` als Hilfsfunktionen.
+ *  - 1.3.1: Verbesserte Logging-Meldungen für TTL-Löschungen, prüft Änderungen vor Updates.
+ *  - 1.3.0: Zentraler Debug-Modus über `window.TW_DEBUG` eingeführt.
+ *  - 1.2.0: Fügt Unterstützung für TTL (Ablaufzeit) und SessionStorage hinzu.
  *  - 1.1.1: Entfernt doppeltes Laden von twSDK (verwaltet in terraFormer.js).
  *  - 1.1.0: Integriert twSDK für verbesserte Skriptverwaltung.
  *  - 1.0.0: Initiale Version mit LocalStorage-Funktionen.
@@ -27,12 +29,20 @@ console.log("💾 storageHelper.js gestartet");
 // Standardwert für Debug-Modus setzen
 window.TW_DEBUG = window.TW_DEBUG || false;
 
+// 🔹 **Zentrale Verwaltung der Speicher-Schlüssel**
+window.STORAGE_KEYS = {
+    REPORTS: "analyzedReports",
+    UI: "reportUIData",
+    ATTACKS: "attackManagerData",
+    SETTINGS: "terraFormerSettings"
+};
+
 const storageHelper = {
     /**
-     * 📦 Speichert Daten im LocalStorage oder SessionStorage.
-     * @param {string} key - Schlüssel für die Speicherung.
-     * @param {any} value - Wert, der gespeichert werden soll.
-     * @param {boolean} session - Falls true, wird SessionStorage genutzt.
+     * 📦 Speichert beliebige Daten im LocalStorage oder SessionStorage.
+     * @param {string} key - Der Schlüssel für die Speicherung.
+     * @param {any} value - Der Wert, der gespeichert werden soll.
+     * @param {boolean} session - Speichert in `sessionStorage` statt `localStorage`.
      * @param {number|null} ttl - Optional: Ablaufzeit in Millisekunden.
      */
     saveToStorage: function (key, value, session = false, ttl = null) {
@@ -50,9 +60,9 @@ const storageHelper = {
 
     /**
      * 🔍 Lädt Daten aus LocalStorage oder SessionStorage.
-     * @param {string} key - Speicher-Schlüssel.
-     * @param {boolean} session - Falls true, wird SessionStorage genutzt.
-     * @returns {any|null} Gespeicherter Wert oder `null`, falls nicht vorhanden oder abgelaufen.
+     * @param {string} key - Der Schlüssel für die Speicherung.
+     * @param {boolean} session - Sucht in `sessionStorage`, falls true.
+     * @returns {any|null} Der gespeicherte Wert oder `null`, falls nicht vorhanden oder abgelaufen.
      */
     loadFromStorage: function (key, session = false) {
         try {
@@ -80,8 +90,8 @@ const storageHelper = {
 
     /**
      * 🗑 Löscht Daten aus LocalStorage oder SessionStorage.
-     * @param {string} key - Speicher-Schlüssel.
-     * @param {boolean} session - Falls true, wird SessionStorage genutzt.
+     * @param {string} key - Der Schlüssel für die Speicherung.
+     * @param {boolean} session - Falls true, wird `sessionStorage` genutzt.
      */
     removeFromStorage: function (key, session = false) {
         try {
@@ -94,10 +104,10 @@ const storageHelper = {
     },
 
     /**
-     * 🔄 Aktualisiert einen Wert im Speicher mit einer Update-Funktion.
-     * @param {string} key - Speicher-Schlüssel.
-     * @param {function} updateFunction - Funktion, die den alten Wert verändert.
-     * @param {boolean} session - Falls true, wird SessionStorage genutzt.
+     * 🔄 Aktualisiert einen Wert im LocalStorage/SessionStorage mit einer Update-Funktion.
+     * @param {string} key - Der Schlüssel für die Speicherung.
+     * @param {function} updateFunction - Eine Funktion, die den alten Wert verändert.
+     * @param {boolean} session - Falls true, wird `sessionStorage` genutzt.
      */
     updateStorage: function (key, updateFunction, session = false) {
         try {
@@ -118,8 +128,8 @@ const storageHelper = {
     },
 
     /**
-     * 📦 Wählt den passenden Speicher (LocalStorage oder SessionStorage).
-     * @param {boolean} session - Falls true, wird SessionStorage genutzt.
+     * 📌 Hilfsfunktion zur Auswahl des Speichers (LocalStorage oder SessionStorage).
+     * @param {boolean} session - Falls true, wird `sessionStorage` genutzt.
      * @returns {Storage} Der ausgewählte Speicher.
      */
     getStorage: function (session) {
@@ -127,9 +137,9 @@ const storageHelper = {
     },
 
     /**
-     * 🛠 Hilfsfunktion zum sicheren Parsen von JSON.
+     * 🔍 Hilfsfunktion zum sicheren Parsen von JSON.
      * @param {string} jsonString - Der zu parsende JSON-String.
-     * @returns {any|null} Das geparste Objekt oder `null` bei Fehler.
+     * @returns {any|null} Das geparste Objekt oder null bei Fehler.
      */
     parseJSON: function (jsonString) {
         try {
@@ -141,5 +151,5 @@ const storageHelper = {
     }
 };
 
-// Global verfügbar machen
+// **📌 Speicher-Helper global verfügbar machen**
 window.storageHelper = storageHelper;
