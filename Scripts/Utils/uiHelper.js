@@ -210,7 +210,7 @@
          *   - content {string} (optional, HTML für den Body)
          *   - footer {string} (optional, HTML für den Footer)
          *   - classes {Array<string>} (optional)
-         * @returns {Object} Ein Objekt mit { overlay, container }.
+         * @returns {Object} Ein Objekt mit den DOM-Elementen { overlay, container }.
          */
         createModal(options = {}) {
             const overlay = this.createElement("div", { classes: ["modal-overlay"] });
@@ -304,11 +304,10 @@
          * Erzeugt einen Fortschrittsbalken, der die spieleigenen CSS‑Stile verwendet.
          * Die Struktur entspricht der progressbar-Funktionalität:
          * Ein äußerer Container mit ID "progressbar" und Klasse "progress-bar",
-         * ein inneres Div mit ID "progress" und ein Label mit ID "progressLabel".
+         * ein inneres Div mit ID "progress" und ein Label mit der Klasse "count".
          * @param {number} total - Die Gesamtanzahl an Schritten (z.B. Gesamtberichte).
-         * @returns {Object} Ein Objekt mit den DOM-Elementen { container, fill, label }.
          */
-        createProgressBar: function (total) {
+        createProgressBar: function(total) {
             const width = jQuery('#content_value')[0].clientWidth;
             const preloaderContent = `
                 <div id="progressbar" class="progress-bar" style="margin-bottom:12px;">
@@ -329,11 +328,11 @@
         },
 
         /**
-         * Aktualisiert den Fortschrittsbalken, indem die Breite des Füll-Divs und das Label gesetzt werden.
+         * Aktualisiert den Fortschrittsbalken, indem die Breite des Füll-Divs und das Label aktualisiert werden.
          * @param {number} index - Der aktuelle Fortschritt (0-basiert).
          * @param {number} total - Die Gesamtanzahl der Schritte.
          */
-        updateProgressBar: function (index, total) {
+        updateProgressBar: function(index, total) {
             jQuery('#progress').css('width', `${((index + 1) / total) * 100}%`);
             jQuery('.count').text(`${index + 1}/${total}`);
             if (index + 1 == total) {
@@ -347,22 +346,83 @@
          * Liefert globale CSS-Regeln für UI-Widgets.
          * @returns {string} Die CSS-Regeln als String.
          */
-        addGlobalStyle() {
+        addGlobalStyle: function() {
             return `
-                .ra-table { border-collapse: collapse; }
-                .ra-table th, .ra-table td { padding: 5px; text-align: center; }
-                .ra-fixed-widget { 
-                    position: fixed; 
-                    top: 10vw; 
-                    right: 10vw; 
-                    z-index: 99999; 
-                    border: 2px solid #7d510f; 
-                    border-radius: 10px; 
-                    padding: 10px; 
-                    background: #e3d5b3 url('/graphic/index/main_bg.jpg') scroll right top repeat; 
-                    overflow-y: auto;
+                /* Table Styling */
+                .ra-table-container { overflow-y: auto; overflow-x: hidden; height: auto; max-height: 400px; }
+                .ra-table th { font-size: 14px; }
+                .ra-table th label { margin: 0; padding: 0; }
+                .ra-table th,
+                .ra-table td { padding: 5px; text-align: center; }
+                .ra-table td a { word-break: break-all; }
+                .ra-table a:focus { color: blue; }
+                .ra-table a.btn:focus { color: #fff; }
+                .ra-table tr:nth-of-type(2n) td { background-color: #f0e2be; }
+                .ra-table tr:nth-of-type(2n+1) td { background-color: #fff5da; }
+    
+                .ra-table-v2 th,
+                .ra-table-v2 td { text-align: left; }
+    
+                .ra-table-v3 { border: 2px solid #bd9c5a; }
+                .ra-table-v3 th,
+                .ra-table-v3 td { border-collapse: separate; border: 1px solid #bd9c5a; text-align: left; }
+    
+                /* Inputs */
+                .ra-textarea { width: 100%; height: 80px; resize: none; }
+    
+                /* Popup */
+                .ra-popup-content { width: 360px; }
+                .ra-popup-content * { box-sizing: border-box; }
+                .ra-popup-content input[type="text"] { padding: 3px; width: 100%; }
+                .ra-popup-content .btn-confirm-yes { padding: 3px !important; }
+                .ra-popup-content label { display: block; margin-bottom: 5px; font-weight: 600; }
+                .ra-popup-content > div { margin-bottom: 15px; }
+                .ra-popup-content > div:last-child { margin-bottom: 0 !important; }
+                .ra-popup-content textarea { width: 100%; height: 100px; resize: none; }
+    
+                /* Elements */
+                .ra-details { display: block; margin-bottom: 8px; border: 1px solid #603000; padding: 8px; border-radius: 4px; }
+                .ra-details summary { font-weight: 600; cursor: pointer; }
+                .ra-details p { margin: 10px 0 0 0; padding: 0; }
+    
+                /* Helpers */
+                .ra-pa5 { padding: 5px !important; }
+                .ra-mt15 { margin-top: 15px !important; }
+                .ra-mb10 { margin-bottom: 10px !important; }
+                .ra-mb15 { margin-bottom: 15px !important; }
+                .ra-tal { text-align: left !important; }
+                .ra-tac { text-align: center !important; }
+                .ra-tar { text-align: right !important; }
+    
+                /* RESPONSIVE */
+                @media (max-width: 480px) {
+                    .ra-fixed-widget {
+                        position: relative !important;
+                        top: 0;
+                        left: 0;
+                        display: block;
+                        width: auto;
+                        height: auto;
+                        z-index: 1;
+                    }
+    
+                    .ra-box-widget {
+                        position: relative;
+                        display: block;
+                        box-sizing: border-box;
+                        width: 97%;
+                        height: auto;
+                        margin: 10px auto;
+                    }
+    
+                    .ra-table {
+                        border-collapse: collapse !important;
+                    }
+    
+                    .custom-close-button { display: none; }
+                    .ra-fixed-widget h3 { margin-bottom: 15px; }
+                    .ra-popup-content { width: 100%; }
                 }
-                .ra-fixed-widget h3 { margin: 0; padding: 0; }
             `;
         },
 
@@ -377,7 +437,7 @@
          * @param {string} [customName="Widget"] - Der im Header angezeigte Name.
          * @returns {HTMLElement} Das gerenderte Widget.
          */
-        renderFixedWidget(body, id, mainClass, customStyle, width, customName = "Widget") {
+        renderFixedWidget: function(body, id, mainClass, customStyle, width, customName = "Widget") {
             const globalStyle = this.addGlobalStyle();
             const content = `
                 <div class="${mainClass} ra-fixed-widget" id="${id}">
@@ -449,7 +509,7 @@
          * @param {string} string - Der zu übersetzende String.
          * @returns {string} Der übersetzte oder Original-String.
          */
-        tt(string) {
+        tt: function(string) {
             return string;
         }
     };
