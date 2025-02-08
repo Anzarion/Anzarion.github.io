@@ -61,16 +61,24 @@
                     return;
                 }
 
+
+                const resourceCell = row.querySelector("td:nth-child(6)");
+                const wallCell = row.querySelector("td:nth-child(9)");
+
+                // Ressourcen- und Wand-Informationen, falls das Element fehlt, wird false gesetzt.
+                const resourceText = resourceCell ? resourceCell.textContent.trim() : "";
+                const wallText = wallCell ? wallCell.textContent.trim() : "";
+
                 // Erstelle das Bericht-Objekt
                 const report = {
                     id: id,
                     url: linkElem.href,
                     coords: linkElem.textContent.trim(),
                     time: timeDate,
-                    // Ressourcen- und Wand-Informationen optional: Falls das Element fehlt, wird false gesetzt.
-                    hasResources: row.querySelector("td:nth-child(6)") ? (row.querySelector("td:nth-child(6)").textContent.trim() !== "?") : false,
-                    hasWallInfo: row.querySelector("td:nth-child(9)") ? (row.querySelector("td:nth-child(9)").textContent.trim() !== "?") : false
+                    hasResources: resourceText !== "" && resourceText !== "?",
+                    hasWallInfo: wallText !== "" && wallText !== "?"
                 };
+
                 console.debug("DEBUG: Bericht gefunden:", report);
                 reports.push(report);
             } catch (rowErr) {
