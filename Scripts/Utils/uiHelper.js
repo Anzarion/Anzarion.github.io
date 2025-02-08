@@ -308,29 +308,24 @@
          * @param {number} total - Die Gesamtanzahl an Schritten (z.B. Gesamtberichte).
          * @returns {Object} Ein Objekt mit den DOM-Elementen { container, fill, label }.
          */
-        createProgressBar(total) {
+        createProgressBar: function (total) {
             const width = jQuery('#content_value')[0].clientWidth;
             const preloaderContent = `
-                <div id="progressbar" class="progress-bar" style="margin-bottom:12px; position: relative;">
-                    <span class="count label" id="progressLabel">0/${total}</span>
-                    <div id="progress" style="width: 0%;">
-                        <span class="count label" style="width: ${width}px;"></span>
+                <div id="progressbar" class="progress-bar" style="margin-bottom:12px;">
+                    <span class="count label">0/${total}</span>
+                    <div id="progress">
+                        <span class="count label" style="width: ${width}px;">
+                            0/${total}
+                        </span>
                     </div>
                 </div>
             `;
     
-            // Füge den Fortschrittsbalken in den entsprechenden Container ein
             if (this.isMobile) {
                 jQuery('#content_value').eq(0).prepend(preloaderContent);
             } else {
                 jQuery('#contentContainer').eq(0).prepend(preloaderContent);
             }
-    
-            return {
-                container: document.getElementById("progressbar"),
-                fill: document.getElementById("progress"),
-                label: document.getElementById("progressLabel")
-            };
         },
 
         /**
