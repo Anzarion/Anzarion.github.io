@@ -8,6 +8,7 @@
  * 
  * Änderungen:
  *  - 1.1.1: Entfernt doppeltes Laden von twSDK (wird jetzt zentral von terraFormer.js verwaltet) und passt den Storage-Zugriff an den neuen storageHelper an.
+ *          Zusätzlich wird jetzt timeHelper.parseTimeString genutzt, um relative Zeitangaben korrekt zu verarbeiten.
  *  - 1.1.0: Integriert twSDK für verbesserte Speicherverwaltung und effizientere Verarbeitung.
  *  - 1.0.0: Initiale Version, erkennt Berichte und speichert sie lokal.
  */
@@ -46,10 +47,12 @@
                         return; // Diese Zeile überspringen
                     }
 
-                    // Zeitstring auslesen und in ein Date-Objekt umwandeln
+                    // Verwende timeHelper zur Umwandlung des Zeitstrings
                     const timeStr = timeElem.textContent.trim();
-                    const timeDate = new Date(timeStr);
-                    if (isNaN(timeDate)) {
+                    const timeDate = window.timeHelper && window.timeHelper.parseTimeString 
+                        ? window.timeHelper.parseTimeString(timeStr)
+                        : new Date(timeStr);
+                    if (!timeDate || isNaN(timeDate)) {
                         console.warn("DEBUG: Ungültiges Datum gefunden:", timeStr);
                         return;
                     }
@@ -72,7 +75,7 @@
                 console.error("DEBUG: Fehler beim Verarbeiten einer Zeile:", rowErr);
             }
         });
-        console.log("DEBUG: Insgesamt erfasste Berichte:", reports);
+        console.debug("DEBUG: Insgesamt erfasste Berichte:", reports);
         return reports;
     }
 
@@ -89,7 +92,7 @@
         }
         try {
             const storedData = window.storageHelper.loadFromStorage(STORAGE_KEY) || [];
-            console.log("DEBUG: Bereits gespeicherte Berichte:", storedData);
+            console.debug("DEBUG: Bereits gespeicherte Berichte:", storedData);
 
             // Filtere Berichte, deren ID noch nicht vorhanden ist
             const newReports = reports.filter(report => !storedData.some(r => r.id === report.id));
@@ -105,7 +108,7 @@
         }
     }
 
-    // Hauptablauf: Berichte erfassen und speichern
+    // Hauptablauf: Berichte erfassen & speichern
     try {
         const reports = getFarmReports();
         console.log("DEBUG: Anzahl erfasster Berichte:", reports.length);
