@@ -1858,4 +1858,307 @@
             twSDK._initDebug();
             twSDK._countAPI();
         },
+		
+		twSDK.Utils = twSDK.Utils || {};
+
+		// Sucht innerhalb eines Containers die erste Zeile, deren erste Zelle exakt den angegebenen Text enthält.
+		twSDK.Utils.findRowByLabel = function($container, labelText) {
+		  return $container.find("tr").filter(function () {
+			var cellText = jQuery(this).find("td, th").first().text().trim();
+			return cellText === labelText;
+		  }).first();
+		};
+
+		// Entfernt alle nicht-numerischen Zeichen (z. B. Tausendertrennzeichen) und wandelt den String in eine Zahl um.
+		twSDK.Utils.parseResourceValue = function(valueStr) {
+		  var clean = valueStr.replace(/[.,\s]/g, "");
+		  return parseInt(clean, 10);
+		};
+
+		// Extrahiert die letzte im String gefundene Koordinate (z. B. "488|518").
+		twSDK.Utils.getLastCoordFromString = function(text) {
+		  if (!text) return "";
+		  var regex = /\d{1,3}\|\d{1,3}/g;
+		  var match, last;
+		  while ((match = regex.exec(text)) !== null) {
+			last = match[0];
+		  }
+		  return last || "";
+		};
+		
+		twSDK.DateUtils = twSDK.DateUtils || {};
+
+		// Wandelt einen Datum-/Zeit-String im Format "DD/MM/YYYY HH:MM:SS" in ein Date-Objekt um.
+		twSDK.DateUtils.parseDateTime = function(dateTimeStr) {
+		  var parts = dateTimeStr.split(' ');
+		  if (parts.length !== 2) return new Date(dateTimeStr);
+		  var dateParts = parts[0].split('/');
+		  var timeParts = parts[1].split(':');
+		  return new Date(
+			parseInt(dateParts[2], 10),
+			parseInt(dateParts[1], 10) - 1,  // Monate sind 0-basiert
+			parseInt(dateParts[0], 10),
+			parseInt(timeParts[0], 10),
+			parseInt(timeParts[1], 10),
+			parseInt(timeParts[2], 10)
+		  );
+		};
+
+		// Formatiert ein Date-Objekt in das Format "DD/MM/YYYY HH:MM:SS"
+		twSDK.DateUtils.formatDateTime = function(dateObj) {
+		  function zeroPad(num) {
+			return num.toString().padStart(2, '0');
+		  }
+		  return zeroPad(dateObj.getDate()) + '/' +
+				 zeroPad(dateObj.getMonth() + 1) + '/' +
+				 dateObj.getFullYear() + ' ' +
+				 zeroPad(dateObj.getHours()) + ':' +
+				 zeroPad(dateObj.getMinutes()) + ':' +
+				 zeroPad(dateObj.getSeconds());
+		};
+		
+		twSDK.ReportParser = twSDK.ReportParser || {};
+
+		// Liste aller möglichen Einheiten (entspricht dem data-unit-Attribut in den Tabellen)
+		twSDK.ReportParser.unitList = [
+		  "spear",       // Spear fighter
+		  "sword",       // Swordsman
+		  "axe",         // Axeman
+		  "archer",      // Archer
+		  "spy",         // Scout
+		  "light",       // Light cavalry
+		  "marcher",     // Mounted archer
+		  "heavy",       // Heavy cavalry
+		  "ram",         // Ram
+		  "catapult",    // Catapult
+		  "knight",      // Paladin
+		  "snob",        // Nobleman
+		  "militia"      // Militia
+		];
+
+		// Erweiterte parseReportType-Funktion: Erfasst Typ, Dot-Icon und Loot-Status
+		twSDK.ReportParser.parseReportType = function($htmlDoc) {
+		  console.log("Starte Parsing des Berichtstyps...");
+		  var $subjectHeader = $htmlDoc.find("table.vis th:contains('Subject')");
+		  console.log("Subject Header gefunden:", $subjectHeader.length);
+		  var result = {
+			type: null,
+			dotIcon: null,
+			lootStatus: null
+		  };
+		  if ($subjectHeader.length) {
+			var $reportTypeCell = $subjectHeader.next("th");
+			console.log("Report Type Cell gefunden:", $reportTypeCell.length);
+			if ($reportTypeCell.length) {
+			  var $dotImg = $reportTypeCell.find("img.tooltip");
+			  console.log("Gefundenes Report-Icon:", $dotImg.length);
+			  if ($dotImg.length) {
+				result.type = $dotImg.attr("title");
+				var src = $dotImg.attr("src");
+				if (src.indexOf("green.png") !== -1) {
+				  result.dotIcon = "green";
+				} else if (src.indexOf("yellow.png") !== -1) {
+				  result.dotIcon = "yellow";
+				} else if (src.indexOf("redyellow.png") !== -1) {
+				  result.dotIcon = "red yellow";
+				} else if (src.indexOf("red.png") !== -1) {
+				  result.dotIcon = "red";
+				} else if (src.indexOf("blue.png") !== -1) {
+				  result.dotIcon = "blue";
+				}
+			  } else {
+				console.warn("Kein Report-Icon mit .tooltip gefunden.");
+			  }
+			  var $lootImg = $reportTypeCell.find("img[src*='loot']");
+			  if ($lootImg.length) {
+				var lootSrc = $lootImg.attr("src");
+				result.lootStatus = (lootSrc.indexOf("loot_yes") !== -1) ? "full" : "not full";
+			  }
+			} else {
+			  console.warn("Keine Report Type Cell gefunden.");
+			}
+		  } else {
+			console.warn("Kein Subject Header gefunden.");
+		  }
+		  console.log("Erfasster Berichtstyp:", result);
+		  return result;
+		};
+
+		// Extrahiert Einheiten aus der angegebenen Tabelle
+		twSDK.ReportParser.extractUnitsFromTable = function($htmlDoc, tableSelector) {
+		  var units = {};
+		  twSDK.ReportParser.unitList.forEach(function(unit) {
+			units[unit] = 0;
+		  });
+		  var $table = $htmlDoc.find(tableSelector);
+		  if ($table.length) {
+			var $unitCells = $table.find("tr").eq(1).find("td");
+			$unitCells.each(function(index, cell) {
+			  var unit = jQuery(cell).attr("data-unit");
+			  var count = parseInt(jQuery(cell).text().trim(), 10) || 0;
+			  if (unit && units.hasOwnProperty(unit)) {
+				units[unit] = count;
+			  }
+			});
+		  }
+		  return units;
+		};
+
+		// Extrahiert Verluste aus der angegebenen Tabelle
+		twSDK.ReportParser.extractLossesFromTable = function($htmlDoc, tableSelector) {
+		  var losses = {};
+		  twSDK.ReportParser.unitList.forEach(function(unit) {
+			losses[unit] = 0;
+		  });
+		  var $table = $htmlDoc.find(tableSelector);
+		  if ($table.length) {
+			var $lossCells = $table.find("tr").eq(2).find("td");
+			$lossCells.each(function(index, cell) {
+			  var unit = jQuery(cell).attr("data-unit");
+			  var count = parseInt(jQuery(cell).text().trim(), 10) || 0;
+			  if (unit && losses.hasOwnProperty(unit)) {
+				losses[unit] = count;
+			  }
+			});
+		  }
+		  return losses;
+		};
+
+		// Extrahiert Einheiten- und Verlustdaten (für Angreifer und Verteidiger)
+		twSDK.ReportParser.parseUnitsData = function($htmlDoc) {
+		  return {
+			units: {
+			  attacker: twSDK.ReportParser.extractUnitsFromTable($htmlDoc, "#attack_info_att_units"),
+			  defender: twSDK.ReportParser.extractUnitsFromTable($htmlDoc, "#attack_info_def_units")
+			},
+			losses: {
+			  attacker: twSDK.ReportParser.extractLossesFromTable($htmlDoc, "#attack_info_att_units"),
+			  defender: twSDK.ReportParser.extractLossesFromTable($htmlDoc, "#attack_info_def_units")
+			}
+		  };
+		};
+
+		// Extrahiert Ressourcen (sowohl "Resources scouted" als auch "Possible resources")
+		twSDK.ReportParser.parseResources = function($htmlDoc) {
+		  function extractResourceValues(title) {
+			var $td = $htmlDoc.find("#attack_spy_resources").find("th:contains('" + title + "')").siblings("td").first();
+			if ($td.length) {
+			  var parts = $td.text().trim().split(/\s+/);
+			  if (parts.length >= 3) {
+				return {
+				  wood: twSDK.Utils.parseResourceValue(parts[0]),
+				  stone: twSDK.Utils.parseResourceValue(parts[1]),
+				  iron: twSDK.Utils.parseResourceValue(parts[2])
+				};
+			  }
+			}
+			return { wood: null, stone: null, iron: null };
+		  }
+		  return {
+			scoutedResources: extractResourceValues("Resources scouted:"),
+			possibleResources: extractResourceValues("Possible resources:")
+		  };
+		};
+
+		// Extrahiert Gebäudedaten: Liest das hidden-Feld und füllt alle möglichen Gebäude
+		twSDK.ReportParser.parseBuildings = function($htmlDoc) {
+		  var buildingList = [
+			"main", "barracks", "stable", "garage", "church", "church_f",
+			"snob", "smith", "place", "statue", "market",
+			"wood", "stone", "iron", "farm", "storage", "hide", "wall", "watchtower"
+		  ];
+		  var reportBuildings = {};
+		  var buildingDataRaw = $htmlDoc.find("#attack_spy_building_data").val();
+		  var parsedBuildings = {};
+		  if (buildingDataRaw) {
+			parsedBuildings = twSDK.ReportParser.parseBuildingData(buildingDataRaw);
+		  }
+		  buildingList.forEach(function(building) {
+			reportBuildings[building] = (parsedBuildings.hasOwnProperty(building)) ? parsedBuildings[building] : null;
+		  });
+		  return reportBuildings;
+		};
+
+		// Extrahiert zusätzliche Informationen (z.B. Buffs, Export-Code)
+		twSDK.ReportParser.parseAdditionalInfo = function($htmlDoc) {
+		  return {
+			buffs: (function() {
+			  var $row = twSDK.Utils.findRowByLabel($htmlDoc, "Buffs:");
+			  return $row.length ? $row.find("td").html().trim() : null;
+			})(),
+			additional: (function() {
+			  var $input = $htmlDoc.find("input#report_export_code");
+			  return $input.length ? $input.val().trim() : null;
+			})()
+		  };
+		};
+
+		// Verwende die bereits vorhandene parseBuildingData-Funktion aus dem ReportParser (oder referenziere eine zentrale Version)
+		twSDK.ReportParser.parseBuildingData = function(rawData) {
+		  var levels = {
+			timberCamp: 0,
+			clayPit: 0,
+			ironMine: 0,
+			wall: 0,
+			storage: 0,
+			hide: 0
+		  };
+		  try {
+			var data = JSON.parse(rawData);
+			for (var i = 0, len = data.length; i < len; i++) {
+			  var entry = data[i];
+			  var level = parseInt(entry.level, 10) || 0;
+			  switch (entry.id) {
+				case 'wood':
+				  levels.timberCamp = level;
+				  break;
+				case 'stone':
+				  levels.clayPit = level;
+				  break;
+				case 'iron':
+				  levels.ironMine = level;
+				  break;
+				case 'wall':
+				  levels.wall = level;
+				  break;
+				case 'storage':
+				  levels.storage = level;
+				  break;
+				case 'hide':
+				  levels.hide = level;
+				  break;
+			  }
+			}
+		  } catch (e) {
+			console.error('Fehler beim Parsen der Gebäudedaten:', e);
+		  }
+		  return levels;
+		};
+
+		// Hauptfunktion: Alle Teilfunktionen zusammenführen und ein vollständiges Report-Objekt zurückgeben
+		twSDK.ReportParser.parseFullReport = function($htmlDoc) {
+		  var generalInfo = twSDK.ReportParser.parseGeneralInfo($htmlDoc);
+		  var unitsData = twSDK.ReportParser.parseUnitsData($htmlDoc);
+		  var resources = twSDK.ReportParser.parseResources($htmlDoc);
+		  var buildings = twSDK.ReportParser.parseBuildings($htmlDoc);
+		  var additionalInfo = twSDK.ReportParser.parseAdditionalInfo($htmlDoc);
+
+		  var report = {
+			reportType: generalInfo.reportType,
+			battleTime: generalInfo.battleTime,
+			attacker: generalInfo.attacker,
+			defender: generalInfo.defender,
+			units: unitsData.units,
+			losses: unitsData.losses,
+			scoutedResources: resources.scoutedResources,
+			possibleResources: resources.possibleResources,
+			buildingLevels: buildings,
+			buffs: additionalInfo.buffs,
+			additional: additionalInfo.additional
+		  };
+
+		  return report;
+		};
+
+
     };
