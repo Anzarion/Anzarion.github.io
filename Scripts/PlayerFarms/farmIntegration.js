@@ -16,14 +16,12 @@
     let rowsHtml = '';
     for (let i = 0, len = reports.length; i < len; i++) {
       const report = reports[i];
-      // Prüfe, ob Angriff erlaubt ist
       const attackable = await canAttack(report.defender);
       if (!attackable) continue;
       const targetId = report.targetId || i;
       const viewIdMatch = report.reportUrl.match(/view=(\d+)/);
       const viewId = viewIdMatch ? viewIdMatch[1] : 0;
       const rowClass = (i % 2 === 0) ? 'a' : 'b';
-      // Berechne zusätzlich produzierte Ressourcen:
       const producedWood = await calculateProducedResources(report.timestamp, report.buildingLevels.timberCamp);
       const producedStone = await calculateProducedResources(report.timestamp, report.buildingLevels.clayPit);
       const producedIron  = await calculateProducedResources(report.timestamp, report.buildingLevels.ironMine);
@@ -86,6 +84,4 @@
 
   // Exportiere die Funktion global
   window.integrateReportsIntoFarmTable = integrateReportsIntoFarmTable;
-
-  // Falls weitere farm-spezifische Funktionen benötigt werden, können diese hier ergänzt werden.
 })();

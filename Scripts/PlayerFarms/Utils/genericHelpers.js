@@ -6,18 +6,17 @@
   // Generische Hilfsfunktionen
   // ------------------------------
 
-  // Entfernt alle nicht-numerischen Zeichen und wandelt in Zahl um
   window.parseResourceValue = function (valueStr) {
     var clean = valueStr.replace(/[.,\s]/g, "");
     return parseInt(clean, 10);
   };
 
-  // Formatiert Ressourcenwert mit Tausenderpunkten
   window.formatResourceOutput = function (value) {
-    return value >= 1000 ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : value.toString();
+    return value >= 1000
+      ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+      : value.toString();
   };
 
-  // Sucht in einem Container die erste Zeile, deren erste Zelle exakt labelText enthält
   window.findRowByLabel = function ($container, labelText) {
     const $rows = $container.find("tr");
     return $rows.filter((_, row) => {
@@ -26,19 +25,23 @@
     }).first();
   };
 
-  // Baut eine Tabellenzelle zusammen
   window.createTableCell = function (content, style, colspan) {
     const styleAttr = style ? ` style="${style}"` : '';
     const colspanAttr = colspan ? ` colspan="${colspan}"` : '';
     return `<td${colspanAttr}${styleAttr}>${content}</td>`;
   };
 
-  // Parst einen Berichtzeitstempel (verschiedene Formate)
+  // ------------------------------
+  // Zeitstempel parsen
+  // ------------------------------
   window.parseReportDate = function (dateString) {
     if (dateString.includes(',')) {
       const lastColonIndex = dateString.lastIndexOf(':');
       if (lastColonIndex !== -1) {
-        dateString = dateString.substring(0, lastColonIndex) + '.' + dateString.substring(lastColonIndex + 1);
+        dateString =
+          dateString.substring(0, lastColonIndex) +
+          '.' +
+          dateString.substring(lastColonIndex + 1);
       }
       return new Date(dateString);
     } else {
@@ -50,28 +53,17 @@
     }
   };
 
-  // Einheitliche Fehlerbehandlung
+  // ------------------------------
+  // Fehlerbehandlung
+  // ------------------------------
   window.handleError = function (error) {
     UI.ErrorMessage(twSDK.tt('There was an error!'));
     console.error(`${twSDK.scriptInfo()} Error: `, error);
   };
 
   // ------------------------------
-  // Globale Konstanten und Storage-Funktionen
+  // Storage-Funktionen für vollständige Berichte
   // ------------------------------
-
-  // Arrays für Kapazitäten
-  window.warehouseCapacities = [
-    1000, 1229, 1512, 1859, 2285, 2810, 3454, 4247, 5222, 6420,
-    7893, 9705, 11932, 14670, 18037, 22177, 27266, 33523, 41217, 50675,
-    62305, 76604, 94184, 115798, 142373, 175047, 215219, 264611, 325337, 400000
-  ];
-
-  window.hidingPlaceCapacities = [
-    150, 200, 267, 356, 474, 632, 843, 1125, 1500, 2000
-  ];
-
-  // Storage für vollständige Berichte
   window.getStoredReports = function () {
     const stored = localStorage.getItem('playerReports');
     return stored ? JSON.parse(stored) : [];
@@ -81,7 +73,9 @@
     localStorage.setItem('playerReports', JSON.stringify(reports));
   };
 
-  // Storage für Report-IDs
+  // ------------------------------
+  // Storage-Funktionen für Report-IDs
+  // ------------------------------
   window.getStoredReportIds = function () {
     const stored = localStorage.getItem('storedReportIds');
     return stored ? JSON.parse(stored) : [];
@@ -93,9 +87,22 @@
     console.log("localStorage (storedReportIds):", localStorage.getItem('storedReportIds'));
   };
 
+  window.filterNewReports = function (reportDataArray) {
+    const storedIds = getStoredReportIds();
+    return reportDataArray.filter(report => !storedIds.includes(report.reportId));
+  };
+
   // ------------------------------
-  // Berechnung der plünderbaren Kapazität
+  // Plünderbare Kapazität berechnen
   // ------------------------------
+  window.warehouseCapacities = [
+    1000, 1229, 1512, 1859, 2285, 2810, 3454, 4247, 5222, 6420,
+    7893, 9705, 11932, 14670, 18037, 22177, 27266, 33523, 41217, 50675,
+    62305, 76604, 94184, 115798, 142373, 175047, 215219, 264611, 325337, 400000
+  ];
+  window.hidingPlaceCapacities = [
+    150, 200, 267, 356, 474, 632, 843, 1125, 1500, 2000
+  ];
   window.calculatePlunderableCapacity = function (buildingLevels) {
     var storageLevel = buildingLevels.storage;
     var hideLevel = buildingLevels.hide;
@@ -105,7 +112,7 @@
   };
 
   // ------------------------------
-  // Zeitstempel formatiert anzeigen
+  // Formatierung des Zeitstempels
   // ------------------------------
   window.formatReportTime = function (timestampStr) {
     const dt = new Date(timestampStr);
@@ -119,7 +126,7 @@
   };
 
   // ------------------------------
-  // Berichtsdaten aus der Übersicht extrahieren
+  // Berichtsdaten extrahieren
   // ------------------------------
   window.getReportData = function () {
     const reportData = [];
@@ -136,14 +143,6 @@
       reportData.push({ reportId, reportLink, attackedCoords });
     });
     return reportData;
-  };
-
-  // ------------------------------
-  // Filterung: Neue Berichte (IDs, die noch nicht verarbeitet wurden)
-  // ------------------------------
-  window.filterNewReports = function (reportDataArray) {
-    const storedIds = getStoredReportIds();
-    return reportDataArray.filter(report => !storedIds.includes(report.reportId));
   };
 
   // ------------------------------
@@ -250,14 +249,16 @@
   };
 
   window.filterDuplicateReports = function (reports) {
-    return Object.values(reports.reduce((acc, report) => {
-      const key = report.defenderCoords || report.defender;
-      const currentTime = Date.parse(report.timestamp) || 0;
-      if (!acc[key] || currentTime > (Date.parse(acc[key].timestamp) || 0)) {
-        acc[key] = report;
-      }
-      return acc;
-    }, {}));
+    return Object.values(
+      reports.reduce((acc, report) => {
+        const key = report.defenderCoords || report.defender;
+        const currentTime = Date.parse(report.timestamp) || 0;
+        if (!acc[key] || currentTime > (Date.parse(acc[key].timestamp) || 0)) {
+          acc[key] = report;
+        }
+        return acc;
+      }, {})
+    );
   };
 
   // ------------------------------
