@@ -8,6 +8,7 @@
       name: 'Player Reports Extractor',
       version: '0.0.1',
       author: 'Anzarion',
+      helpLink: 'https://example.com/hilfe'
     },
     translations: {
       en_DK: {
