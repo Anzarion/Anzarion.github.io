@@ -1,23 +1,19 @@
-// genericHelpers.js
 (function () {
   'use strict';
 
   // ------------------------------
   // Generische Hilfsfunktionen
   // ------------------------------
-
-  window.parseResourceValue = function (valueStr) {
+  function parseResourceValue(valueStr) {
     var clean = valueStr.replace(/[.,\s]/g, "");
     return parseInt(clean, 10);
-  };
+  }
 
-  window.formatResourceOutput = function (value) {
-    return value >= 1000
-      ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-      : value.toString();
-  };
+  function formatResourceOutput(value) {
+    return value >= 1000 ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : value.toString();
+  }
 
-  window.findRowByLabel = function ($container, labelText) {
+  const findRowByLabel = ($container, labelText) => {
     const $rows = $container.find("tr");
     return $rows.filter((_, row) => {
       const cellText = jQuery(row).find("td, th").first().text().trim();
@@ -25,110 +21,16 @@
     }).first();
   };
 
-  window.createTableCell = function (content, style, colspan) {
+  function createTableCell(content, style, colspan) {
     const styleAttr = style ? ` style="${style}"` : '';
     const colspanAttr = colspan ? ` colspan="${colspan}"` : '';
     return `<td${colspanAttr}${styleAttr}>${content}</td>`;
-  };
-
-  // ------------------------------
-  // Zeitstempel parsen
-  // ------------------------------
-  window.parseReportDate = function (dateString) {
-    if (dateString.includes(',')) {
-      const lastColonIndex = dateString.lastIndexOf(':');
-      if (lastColonIndex !== -1) {
-        dateString =
-          dateString.substring(0, lastColonIndex) +
-          '.' +
-          dateString.substring(lastColonIndex + 1);
-      }
-      return new Date(dateString);
-    } else {
-      const [datePart, timePart] = dateString.split(' ');
-      if (!datePart || !timePart) return new Date(dateString);
-      const [day, month, year] = datePart.split('/');
-      const isoString = `${year}-${month}-${day}T${timePart}`;
-      return new Date(isoString);
-    }
-  };
-
-  // ------------------------------
-  // Fehlerbehandlung
-  // ------------------------------
-  window.handleError = function (error) {
-    UI.ErrorMessage(twSDK.tt('There was an error!'));
-    console.error(`${twSDK.scriptInfo()} Error: `, error);
-  };
-
-  // ------------------------------
-  // Storage-Funktionen für vollständige Berichte
-  // ------------------------------
-  window.getStoredReports = function () {
-    const stored = localStorage.getItem('playerReports');
-    return stored ? JSON.parse(stored) : [];
-  };
-
-  window.setStoredReports = function (reports) {
-    localStorage.setItem('playerReports', JSON.stringify(reports));
-  };
-
-  // ------------------------------
-  // Storage-Funktionen für Report-IDs
-  // ------------------------------
-  window.getStoredReportIds = function () {
-    const stored = localStorage.getItem('storedReportIds');
-    return stored ? JSON.parse(stored) : [];
-  };
-
-  window.setStoredReportIds = function (ids) {
-    console.log("Setze Report IDs:", ids);
-    localStorage.setItem('storedReportIds', JSON.stringify(ids));
-    console.log("localStorage (storedReportIds):", localStorage.getItem('storedReportIds'));
-  };
-
-  window.filterNewReports = function (reportDataArray) {
-    const storedIds = getStoredReportIds();
-    return reportDataArray.filter(report => !storedIds.includes(report.reportId));
-  };
-
-  // ------------------------------
-  // Plünderbare Kapazität berechnen
-  // ------------------------------
-  window.warehouseCapacities = [
-    1000, 1229, 1512, 1859, 2285, 2810, 3454, 4247, 5222, 6420,
-    7893, 9705, 11932, 14670, 18037, 22177, 27266, 33523, 41217, 50675,
-    62305, 76604, 94184, 115798, 142373, 175047, 215219, 264611, 325337, 400000
-  ];
-  window.hidingPlaceCapacities = [
-    150, 200, 267, 356, 474, 632, 843, 1125, 1500, 2000
-  ];
-  window.calculatePlunderableCapacity = function (buildingLevels) {
-    var storageLevel = buildingLevels.storage;
-    var hideLevel = buildingLevels.hide;
-    var warehouseCapacity = storageLevel > 0 ? warehouseCapacities[storageLevel - 1] : 0;
-    var hidingCapacity = hideLevel > 0 ? hidingPlaceCapacities[hideLevel - 1] : 0;
-    return warehouseCapacity - hidingCapacity;
-  };
-
-  // ------------------------------
-  // Formatierung des Zeitstempels
-  // ------------------------------
-  window.formatReportTime = function (timestampStr) {
-    const dt = new Date(timestampStr);
-    if (isNaN(dt.getTime())) return timestampStr;
-    const now = new Date();
-    if (dt.toDateString() === now.toDateString()) {
-      return `today at ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-    }
-    const pad = num => num.toString().padStart(2, '0');
-    return `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
-  };
+  }
 
   // ------------------------------
   // Berichtsdaten extrahieren
   // ------------------------------
-  window.getReportData = function () {
+  function getReportData() {
     const reportData = [];
     jQuery('#report_list tbody tr').each((_, row) => {
       const classList = row.className.split(' ');
@@ -139,16 +41,86 @@
       if (!reportLink) return;
       const rowText = jQuery(row).text();
       const coordMatches = rowText.match(/\d{1,3}\|\d{1,3}/g);
+      // Annahme: der zweite Treffer enthält die angegriffenen Koordinaten
       const attackedCoords = (coordMatches && coordMatches.length > 1) ? coordMatches[1] : null;
       reportData.push({ reportId, reportLink, attackedCoords });
     });
     return reportData;
-  };
+  }
+
+  // ------------------------------
+  // Plünderbare Kapazität berechnen
+  // ------------------------------
+  function calculatePlunderableCapacity(buildingLevels) {
+    var storageLevel = buildingLevels.storage;
+    var hideLevel = buildingLevels.hide;
+    var warehouseCapacity = storageLevel > 0 ? warehouseCapacities[storageLevel - 1] : 0;
+    var hidingCapacity = hideLevel > 0 ? hidingPlaceCapacities[hideLevel - 1] : 0;
+    return warehouseCapacity - hidingCapacity;
+  }
+
+  // ------------------------------
+  // Zeitstempel parsen
+  // ------------------------------
+  function parseReportDate(dateString) {
+    if (dateString.includes(',')) {
+      const lastColonIndex = dateString.lastIndexOf(':');
+      if (lastColonIndex !== -1) {
+        dateString = dateString.substring(0, lastColonIndex) + '.' + dateString.substring(lastColonIndex + 1);
+      }
+      return new Date(dateString);
+    } else {
+      const [datePart, timePart] = dateString.split(' ');
+      if (!datePart || !timePart) return new Date(dateString);
+      const [day, month, year] = datePart.split('/');
+      const isoString = `${year}-${month}-${day}T${timePart}`;
+      return new Date(isoString);
+    }
+  }
+
+  // ------------------------------
+  // Fehlerbehandlung
+  // ------------------------------
+  function handleError(error) {
+    UI.ErrorMessage(twSDK.tt('There was an error!'));
+    console.error(`${twSDK.scriptInfo()} Error: `, error);
+  }
+
+  // ------------------------------
+  // Storage-Funktionen für vollständige Berichte
+  // ------------------------------
+  function getStoredReports() {
+    const stored = localStorage.getItem('playerReports');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  function setStoredReports(reports) {
+    localStorage.setItem('playerReports', JSON.stringify(reports));
+  }
+
+  // ------------------------------
+  // Storage-Funktionen für Report-IDs
+  // ------------------------------
+  function getStoredReportIds() {
+    const stored = localStorage.getItem('storedReportIds');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  function setStoredReportIds(ids) {
+    console.log("Setze Report IDs:", ids);
+    localStorage.setItem('storedReportIds', JSON.stringify(ids));
+    console.log("localStorage (storedReportIds):", localStorage.getItem('storedReportIds'));
+  }
+
+  function filterNewReports(reportDataArray) {
+    const storedIds = getStoredReportIds();
+    return reportDataArray.filter(report => !storedIds.includes(report.reportId));
+  }
 
   // ------------------------------
   // Weltenspeed und Ressourcenproduktion
   // ------------------------------
-  window.getWorldSpeed = async function () {
+  async function getWorldSpeed() {
     try {
       const worldConfig = await twSDK.getWorldConfig();
       const worldSpeed = parseFloat(worldConfig.config.speed);
@@ -157,9 +129,9 @@
       console.error('Fehler beim Abrufen des Weltenspeed:', error);
       return 1;
     }
-  };
+  }
 
-  window.calculateProducedResources = async function (lastReportTimestamp, mineLevel) {
+  async function calculateProducedResources(lastReportTimestamp, mineLevel) {
     try {
       const worldSpeed = parseFloat(await getWorldSpeed());
       const now = twSDK.getServerDateTimeObject();
@@ -172,9 +144,9 @@
       console.error("Fehler bei der Berechnung der produzierten Ressourcen:", error);
       return 0;
     }
-  };
+  }
 
-  window.canAttack = async function (defenderName) {
+  async function canAttack(defenderName) {
     try {
       const playersData = await twSDK.worldDataAPI('player');
       const defender = playersData.find(player =>
@@ -191,12 +163,12 @@
       console.error("Fehler in canAttack:", error);
       return false;
     }
-  };
+  }
 
   // ------------------------------
   // Gebäudedaten parsen
   // ------------------------------
-  window.parseBuildingData = function (rawData) {
+  function parseBuildingData(rawData) {
     const levels = {
       timberCamp: 0,
       clayPit: 0,
@@ -222,12 +194,12 @@
       console.error('Fehler beim Parsen der Gebäudedaten:', e);
     }
     return levels;
-  };
+  }
 
   // ------------------------------
   // Filterung und Merging der Berichtsdaten
   // ------------------------------
-  window.filterReportsByVillage = async function (reports) {
+  async function filterReportsByVillage(reports) {
     try {
       const villages = await twSDK.worldDataAPI('village');
       const villageMap = {};
@@ -246,22 +218,68 @@
       console.error("Fehler beim Filtern der Berichte nach Dorf-Daten:", error);
       return reports;
     }
-  };
+  }
 
-  window.filterDuplicateReports = function (reports) {
-    return Object.values(
-      reports.reduce((acc, report) => {
-        const key = report.defenderCoords || report.defender;
-        const currentTime = Date.parse(report.timestamp) || 0;
-        if (!acc[key] || currentTime > (Date.parse(acc[key].timestamp) || 0)) {
-          acc[key] = report;
-        }
-        return acc;
-      }, {})
-    );
-  };
+  function filterDuplicateReports(reports) {
+    return Object.values(reports.reduce((acc, report) => {
+      const key = report.defenderCoords || report.defender;
+      const currentTime = Date.parse(report.timestamp) || 0;
+      if (!acc[key] || currentTime > (Date.parse(acc[key].timestamp) || 0)) {
+        acc[key] = report;
+      }
+      return acc;
+    }, {}));
+  }
+
+  function formatReportTime(timestampStr) {
+    const dt = new Date(timestampStr);
+    if (isNaN(dt.getTime())) return timestampStr;
+    const now = new Date();
+    if (dt.toDateString() === now.toDateString()) {
+      return `today at ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+    }
+    const pad = num => num.toString().padStart(2, '0');
+    return `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+  }
 
   // ------------------------------
-  // Export: Alle Funktionen stehen global zur Verfügung
+  // Kapazitäten Arrays
   // ------------------------------
+  const warehouseCapacities = [
+    1000, 1229, 1512, 1859, 2285, 2810, 3454, 4247, 5222, 6420,
+    7893, 9705, 11932, 14670, 18037, 22177, 27266, 33523, 41217, 50675,
+    62305, 76604, 94184, 115798, 142373, 175047, 215219, 264611, 325337, 400000
+  ];
+
+  const hidingPlaceCapacities = [
+    150, 200, 267, 356, 474, 632, 843, 1125, 1500, 2000
+  ];
+
+  // ------------------------------
+  // Exponieren der Funktionen als globales Objekt
+  // ------------------------------
+  window.genericHelpers = {
+    parseResourceValue,
+    formatResourceOutput,
+    findRowByLabel,
+    createTableCell,
+    getReportData,
+    calculatePlunderableCapacity,
+    parseReportDate,
+    handleError,
+    getStoredReports,
+    setStoredReports,
+    getStoredReportIds,
+    setStoredReportIds,
+    filterNewReports,
+    getWorldSpeed,
+    calculateProducedResources,
+    canAttack,
+    parseBuildingData,
+    filterReportsByVillage,
+    filterDuplicateReports,
+    formatReportTime,
+    warehouseCapacities,
+    hidingPlaceCapacities
+  };
 })();
