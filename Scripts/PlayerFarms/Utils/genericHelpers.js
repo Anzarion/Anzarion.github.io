@@ -4,8 +4,8 @@
   // ------------------------------
   // Generische Hilfsfunktionen
   // ------------------------------
-  function debugLog(functionName, message, data = null) {
-  if (twSDK.isDebug) {
+function debugLog(functionName, message, data = null) {
+  if (window.isDebug) {
     console.debug(`[DEBUG] ${functionName}: ${message}`, data ?? "");
   }
 }
