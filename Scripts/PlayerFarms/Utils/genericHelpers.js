@@ -4,14 +4,23 @@
   // ------------------------------
   // Generische Hilfsfunktionen
   // ------------------------------
+  function debugLog(functionName, message, data = null) {
+  if (twSDK.isDebug) {
+    console.debug(`[DEBUG] ${functionName}: ${message}`, data ?? "");
+  }
+}
+  
   function parseResourceValue(valueStr) {
     var clean = valueStr.replace(/[.,\s]/g, "");
     return parseInt(clean, 10);
   }
 
-  function formatResourceOutput(value) {
-    return value >= 1000 ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : value.toString();
-  }
+function formatResourceOutput(value) {
+  debugLog("formatResourceOutput", "Startet mit input", value);
+  const result = value >= 1000 ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : value.toString();
+  debugLog("formatResourceOutput", "Ergebnis", result);
+  return result;
+}
 
   const findRowByLabel = ($container, labelText) => {
     const $rows = $container.find("tr");
