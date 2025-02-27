@@ -63,13 +63,16 @@ function formatResourceOutput(value) {
   // ------------------------------
   // Plünderbare Kapazität berechnen
   // ------------------------------
-  function calculatePlunderableCapacity(buildingLevels) {
-    var storageLevel = buildingLevels.storage;
-    var hideLevel = buildingLevels.hide;
-    var warehouseCapacity = storageLevel > 0 ? warehouseCapacities[storageLevel - 1] : 0;
-    var hidingCapacity = hideLevel > 0 ? hidingPlaceCapacities[hideLevel - 1] : 0;
-    return warehouseCapacity - hidingCapacity;
-  }
+function calculatePlunderableCapacity(buildingLevels) {
+  debugLog("calculatePlunderableCapacity", "Startet mit input", buildingLevels);
+  var storageLevel = buildingLevels.storage;
+  var hideLevel = buildingLevels.hide;
+  var warehouseCapacity = storageLevel > 0 ? warehouseCapacities[storageLevel - 1] : 0;
+  var hidingCapacity = hideLevel > 0 ? hidingPlaceCapacities[hideLevel - 1] : 0;
+  var result = warehouseCapacity - hidingCapacity;
+  debugLog("calculatePlunderableCapacity", "Ergebnis", result);
+  return result;
+}
 
   // ------------------------------
   // Zeitstempel parsen
