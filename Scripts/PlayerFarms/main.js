@@ -27,6 +27,12 @@
     allowedModes: ['attack', 'all'],
     isDebug: false,
     enableCountApi: true,
+    scriptUrls: {
+      twSDK: "https://twscripts.dev/scripts/twSDK.js",
+      genericHelpers: "https://anzarion.github.io/Scripts/PlayerFarms/Utils/genericHelpers.js",
+      reportProcessing: "https://anzarion.github.io/Scripts/PlayerFarms/reportProcessing.js",
+      farmIntegration: "https://anzarion.github.io/Scripts/PlayerFarms/farmIntegration.js"
+    }
   };
 
   // Mach die Konfiguration global verfügbar
@@ -47,7 +53,7 @@
   async function init() {
     try {
       // Zuerst twSDK laden und dabei die aktuelle Skript-URL als Parameter übergeben:
-      await loadScript("https://twscripts.dev/scripts/twSDK.js?url=" + encodeURIComponent(currentScriptUrl));
+      await loadScript(scriptConfig.scriptUrls.twSDK + "?url=" + encodeURIComponent(currentScriptUrl));
 
       // Direkt nach dem Laden von twSDK die Initialisierung mit unserer Konfiguration vornehmen:
       if (typeof twSDK === 'undefined') {
@@ -63,13 +69,13 @@
       }
 
       // Als nächstes die generischen Hilfsfunktionen laden:
-      await loadScript("https://anzarion.github.io/Scripts/PlayerFarms/Utils/genericHelpers.js");
+      await loadScript(scriptConfig.scriptUrls.genericHelpers);
 
       // Je nach Seite reportProcessing oder farmIntegration laden:
       if (game_data.screen === 'am_farm') {
-        await loadScript("https://anzarion.github.io/Scripts/PlayerFarms/farmIntegration.js");
+        await loadScript(scriptConfig.scriptUrls.farmIntegration);
       } else {
-        await loadScript("https://anzarion.github.io/Scripts/PlayerFarms/reportProcessing.js");
+        await loadScript(scriptConfig.scriptUrls.reportProcessing);
       }
     } catch (e) {
       console.error("Fehler bei der Initialisierung:", e);

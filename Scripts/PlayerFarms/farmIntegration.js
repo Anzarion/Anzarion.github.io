@@ -13,8 +13,14 @@
     }
 
     let rowsHtml = '';
+    const canAttackCache = {}; // Cache für canAttack Ergebnisse
+
     const reportPromises = reports.map(async (report, i) => {
-      const attackable = await genericHelpers.canAttack(report.defender);
+      if (canAttackCache[report.defender] === undefined) {
+        canAttackCache[report.defender] = await genericHelpers.canAttack(report.defender);
+      }
+      const attackable = canAttackCache[report.defender];
+
       if (!attackable) return null;
       const targetId = report.targetId || i;
       const viewIdMatch = report.reportUrl.match(/view=(\d+)/);
