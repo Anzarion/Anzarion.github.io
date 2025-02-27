@@ -124,8 +124,6 @@ function setStoredReportIds(ids) {
   localStore('storedReportIds', ids);
 }
 
-  }
-
   function filterNewReports(reportDataArray) {
     const storedIds = getStoredReportIds();
     return reportDataArray.filter(report => !storedIds.includes(report.reportId));
