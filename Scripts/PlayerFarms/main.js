@@ -6,8 +6,9 @@
     scriptData: {
       prefix: 'playerReportsExtractor',
       name: 'Player Reports Extractor',
-      version: '0.0.1',
-      author: 'Anzarion',
+      version: '1.0.7',
+      author: 'DeinName',
+      authorUrl: 'https://example.com',
       helpLink: 'https://example.com/hilfe'
     },
     translations: {
@@ -27,12 +28,6 @@
     allowedModes: ['attack', 'all'],
     isDebug: false,
     enableCountApi: true,
-    scriptUrls: {
-      twSDK: "https://twscripts.dev/scripts/twSDK.js",
-      genericHelpers: "https://anzarion.github.io/Scripts/PlayerFarms/Utils/genericHelpers.js",
-      reportProcessing: "https://anzarion.github.io/Scripts/PlayerFarms/reportProcessing.js",
-      farmIntegration: "https://anzarion.github.io/Scripts/PlayerFarms/farmIntegration.js"
-    }
   };
 
   // Mach die Konfiguration global verfügbar
@@ -53,12 +48,9 @@
   async function init() {
     try {
       // Zuerst twSDK laden und dabei die aktuelle Skript-URL als Parameter übergeben:
-      await loadScript(scriptConfig.scriptUrls.twSDK + "?url=" + encodeURIComponent(currentScriptUrl));
+      await loadScript("https://twscripts.dev/scripts/twSDK.js?url=" + encodeURIComponent(currentScriptUrl));
 
       // Direkt nach dem Laden von twSDK die Initialisierung mit unserer Konfiguration vornehmen:
-      if (typeof twSDK === 'undefined') {
-        throw new Error('twSDK wurde nicht geladen.');
-      }
       await twSDK.init(scriptConfig);
 
       // Beispielhafte Prüfung, ob wir uns auf der richtigen Seite befinden:
@@ -69,17 +61,16 @@
       }
 
       // Als nächstes die generischen Hilfsfunktionen laden:
-      await loadScript(scriptConfig.scriptUrls.genericHelpers);
+      await loadScript("https://anzarion.github.io/Scripts/PlayerFarms/Utils/genericHelpers.js");
 
       // Je nach Seite reportProcessing oder farmIntegration laden:
       if (game_data.screen === 'am_farm') {
-        await loadScript(scriptConfig.scriptUrls.farmIntegration);
+        await loadScript("https://anzarion.github.io/Scripts/PlayerFarms/farmIntegration.js");
       } else {
-        await loadScript(scriptConfig.scriptUrls.reportProcessing);
+        await loadScript("https://anzarion.github.io/Scripts/PlayerFarms/reportProcessing.js");
       }
     } catch (e) {
       console.error("Fehler bei der Initialisierung:", e);
-      UI.ErrorMessage(twSDK.tt('There was an error!') + ': ' + e.message);
     }
   }
   init();

@@ -16,38 +16,42 @@
       <td colspan="14"><strong>Spielerberichte</strong></td>
     </tr>`);
     let rowsHtml = '';
-    const reportPromises = reports.map(async (report, i) => {
+    for (let i = 0, len = reports.length; i < len; i++) {
+      const report = reports[i];
       const attackable = await genericHelpers.canAttack(report.defender);
-      if (!attackable) return null;
+      if (!attackable) continue;
       const targetId = report.targetId || i;
       const viewIdMatch = report.reportUrl.match(/view=(\d+)/);
       const viewId = viewIdMatch ? viewIdMatch[1] : 0;
       const rowClass = (i % 2 === 0) ? 'a' : 'b';
-      const resources = await genericHelpers.calculateResources(report.buildingLevels, report.timestamp);
-      const { wood: producedWood, stone: producedStone, iron: producedIron } = resources;    
+      const producedWood = await genericHelpers.calculateProducedResources(report.timestamp, report.buildingLevels.timberCamp);
+      const producedStone = await genericHelpers.calculateProducedResources(report.timestamp, report.buildingLevels.clayPit);
+      const producedIron  = await genericHelpers.calculateProducedResources(report.timestamp, report.buildingLevels.ironMine);
       const originalWood = report.scoutedResources ? report.scoutedResources.wood : 0;
       const originalStone = report.scoutedResources ? report.scoutedResources.stone : 0;
       const originalIron = report.scoutedResources ? report.scoutedResources.iron : 0;
-      const plunderableCapacity = await genericHelpers.calculateResources(report.buildingLevels);
       const updatedWoodRaw = originalWood + producedWood;
       const updatedStoneRaw = originalStone + producedStone;
       const updatedIronRaw = originalIron + producedIron;
+      const plunderableCapacity = genericHelpers.calculatePlunderableCapacity(report.buildingLevels);
       const updatedWood = Math.min(updatedWoodRaw, plunderableCapacity);
       const updatedStone = Math.min(updatedStoneRaw, plunderableCapacity);
       const updatedIron = Math.min(updatedIronRaw, plunderableCapacity);
-      
-      const formatResource = (resource, updatedResource, capacity) => {
-        if (!report.scoutedResources) return '';
-        const formattedValue = genericHelpers.formatResourceOutput(updatedResource);
-        return updatedResource === capacity
-            ? `<span style="color: red;">${formattedValue}</span>`
-            : formattedValue;
-      };
-
-      const woodText = formatResource('wood', updatedWood, plunderableCapacity);
-      const stoneText = formatResource('stone', updatedStone, plunderableCapacity);
-      const ironText = formatResource('iron', updatedIron, plunderableCapacity);
-
+      const woodText = report.scoutedResources
+        ? (updatedWood === plunderableCapacity
+            ? `<span style="color: red;">${genericHelpers.formatResourceOutput(updatedWood)}</span>`
+            : genericHelpers.formatResourceOutput(updatedWood))
+        : '';
+      const stoneText = report.scoutedResources
+        ? (updatedStone === plunderableCapacity
+            ? `<span style="color: red;">${genericHelpers.formatResourceOutput(updatedStone)}</span>`
+            : genericHelpers.formatResourceOutput(updatedStone))
+        : '';
+      const ironText = report.scoutedResources
+        ? (updatedIron === plunderableCapacity
+            ? `<span style="color: red;">${genericHelpers.formatResourceOutput(updatedIron)}</span>`
+            : genericHelpers.formatResourceOutput(updatedIron))
+        : '';
       const resHtml = report.scoutedResources
         ? `<span class="nowrap"><span class="icon header wood" title="Wood"></span><span class="res">${woodText}</span></span>
            <span class="nowrap"><span class="icon header stone" title="Clay"></span><span class="res">${stoneText}</span></span>
@@ -74,12 +78,8 @@
       rowHtml += genericHelpers.createTableCell(`<a href="/game.php?village=447&screen=place&target=${targetId}" onclick="return Accountmanager.farm.openRallyPoint(${targetId}, event)">
         <img src="https://dszz.innogamescdn.com/asset/449b3b09/graphic/buildings/place.png" alt="Rally point" />
       </a>`, 'text-align: center;');
-      return `<tr class="player_report row_${rowClass}">${rowHtml}</tr>`;
-    });
-
-    const reportRows = await Promise.all(reportPromises);
-    rowsHtml = reportRows.filter(row => row !== null).join('');
-
+      rowsHtml += `<tr class="player_report row_${rowClass}">${rowHtml}</tr>`;
+    }
     $plunderList.append(rowsHtml);
     console.log('Spielerberichte wurden in die Farm-Assistent-Tabelle integriert.');
   }

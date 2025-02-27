@@ -131,20 +131,20 @@
     }
   }
 
-	async function calculateProducedResources(lastReportTimestamp, mineLevel) {
-		try {
-			const worldConfig = await twSDK.getWorldConfig();
-			const worldSpeed = parseFloat(worldConfig.config.speed);  // Direkt in der Funktion statt extra Funktion
-			const now = twSDK.getServerDateTimeObject();
-			const attackTime = new Date(lastReportTimestamp);
-			const elapsedHours = (now - attackTime) / (1000 * 60 * 60);
-			const productionRate = parseFloat(twSDK.resPerHour[mineLevel]);
-			return Math.round(worldSpeed * productionRate * elapsedHours);
-		} catch (error) {
-			console.error("Fehler bei der Berechnung der produzierten Ressourcen:", error);
-			return 0;
-		}
-	}
+  async function calculateProducedResources(lastReportTimestamp, mineLevel) {
+    try {
+      const worldSpeed = parseFloat(await getWorldSpeed());
+      const now = twSDK.getServerDateTimeObject();
+      const attackTime = new Date(lastReportTimestamp);
+      const elapsedHours = (now - attackTime) / (1000 * 60 * 60);
+      const productionRate = parseFloat(twSDK.resPerHour[mineLevel]);
+      const produced = worldSpeed * productionRate * elapsedHours;
+      return Math.round(produced);
+    } catch (error) {
+      console.error("Fehler bei der Berechnung der produzierten Ressourcen:", error);
+      return 0;
+    }
+  }
 
   async function canAttack(defenderName) {
     try {
