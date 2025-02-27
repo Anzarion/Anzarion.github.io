@@ -100,7 +100,49 @@
           } catch (parseError) {
             console.error("Fehler beim Parsen des Berichts:", parseError);
           }
-        }, function () {
+}, function () {
+          // Schritt 6: Mergen der neuen Berichte mit dem vorhandenen Cache
+          const mergedReports = genericHelpers.filterDuplicateReports(playerReports);
+          const existingReports = genericHelpers.getStoredReports();
+          const existingMap = {};
+          existingReports.forEach(rep => {
+            const key = rep.defenderCoords || rep.defender;
+            existingMap[key] = rep;
+          });
+          mergedReports.forEach(newRep => {
+            const keyNew = newRep.defenderCoords || newRep.defender;
+            const newTime = new Date(newRep.timestamp).getTime() || 0;
+            if (existingMap[keyNew]) {
+              const oldTime = new Date(existingMap[keyNew].timestamp).getTime() || 0;
+              if (newTime > oldTime) {
+                console.debug(`Neuer Bericht für ${keyNew}: ${newRep.timestamp}`);
+                existingMap[keyNew] = newRep;
+              } else {
+                console.debug(`Behalte alten Bericht für ${keyNew}`);
+              }
+            } else {
+              console.debug(`Neuer Eintrag für ${keyNew}: ${newRep.timestamp}`);
+              existingMap[keyNew] = newRep;
+            }
+          });
+          const finalReports = Object.values(existingMap);
+          genericHelpers.setStoredReports(finalReports);
+
+          // Schritt 7: Aktualisiere den Report-ID-Cache
+          const newIds = newReports.map(r => r.reportId);
+          const storedIds = genericHelpers.getStoredReportIds();
+          const updatedIds = [...storedIds, ...newIds];
+          genericHelpers.setStoredReportIds(updatedIds);
+
+          console.log('Player Reports Extractor: Gespeicherte Berichte:', finalReports);
+
+          // Anzeige: Auf report-Seite Widget anzeigen
+          twSDK.renderFixedWidget(
+            `<div><b>Player Reports Extractor</b><br/>Es wurden ${finalReports.length} Berichte gespeichert.</div>`,
+            scriptConfig.scriptData.prefix,
+            'player-reports-extractor-widget'
+          );
+}, function () {
           // Schritt 6: Mergen der neuen Berichte mit dem vorhandenen Cache
           const mergedReports = genericHelpers.filterDuplicateReports(playerReports);
           const existingReports = genericHelpers.getStoredReports();

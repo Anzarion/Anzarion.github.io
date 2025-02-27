@@ -13,15 +13,9 @@
     }
 
     let rowsHtml = '';
-    const canAttackCache = {}; // Cache für canAttack Ergebnisse
-
-    const reportPromises = reports.map(async (report, i) => {
-      if (canAttackCache[report.defender] === undefined) {
-        canAttackCache[report.defender] = await genericHelpers.canAttack(report.defender);
-      }
-      const attackable = canAttackCache[report.defender];
-
-      if (!attackable) return null;
+        const reportPromises = reports.map(async (report, i) => {
+      const attackable = await genericHelpers.canAttack(report.defender);
+            if (!attackable) return null;
       const targetId = report.targetId || i;
       const viewIdMatch = report.reportUrl.match(/view=(\d+)/);
       const viewId = viewIdMatch ? viewIdMatch[1] : 0;
@@ -39,21 +33,19 @@
       const updatedWood = Math.min(updatedWoodRaw, plunderableCapacity);
       const updatedStone = Math.min(updatedStoneRaw, plunderableCapacity);
       const updatedIron = Math.min(updatedIronRaw, plunderableCapacity);
-      const woodText = report.scoutedResources
-        ? (updatedWood === plunderableCapacity
-            ? `<span style="color: red;">${genericHelpers.formatResourceOutput(updatedWood)}</span>`
-            : genericHelpers.formatResourceOutput(updatedWood))
-        : '';
-      const stoneText = report.scoutedResources
-        ? (updatedStone === plunderableCapacity
-            ? `<span style="color: red;">${genericHelpers.formatResourceOutput(updatedStone)}</span>`
-            : genericHelpers.formatResourceOutput(updatedStone))
-        : '';
-      const ironText = report.scoutedResources
-        ? (updatedIron === plunderableCapacity
-            ? `<span style="color: red;">${genericHelpers.formatResourceOutput(updatedIron)}</span>`
-            : genericHelpers.formatResourceOutput(updatedIron))
-        : '';
+
+      const formatResource = (resource, updatedResource, plunderableCapacity) => {
+        if (!report.scoutedResources) return '';
+        const formattedValue = genericHelpers.formatResourceOutput(updatedResource);
+        return updatedResource === plunderableCapacity
+          ? `<span style="color: red;">${formattedValue}</span>`
+          : formattedValue;
+      };
+
+      const woodText = formatResource('wood', updatedWood, plunderableCapacity);
+      const stoneText = formatResource('stone', updatedStone, plunderableCapacity);
+      const ironText = formatResource('iron', updatedIron, plunderableCapacity);
+
       const resHtml = report.scoutedResources
         ? `<span class="nowrap"><span class="icon header wood" title="Wood"></span><span class="res">${woodText}</span></span>
            <span class="nowrap"><span class="icon header stone" title="Clay"></span><span class="res">${stoneText}</span></span>
