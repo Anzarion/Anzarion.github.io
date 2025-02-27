@@ -11,7 +11,10 @@
       console.warn('Ziel-Tabelle (#plunder_list) nicht gefunden!');
       return;
     }
-
+    // Header-Zeile hinzufügen
+    $plunderList.prepend(`<tr class="player_report_header" style="background-color:#DFF0D8;">
+      <td colspan="14"><strong>Spielerberichte</strong></td>
+    </tr>`);
     let rowsHtml = '';
     const reportPromises = reports.map(async (report, i) => {
       const attackable = await genericHelpers.canAttack(report.defender);
