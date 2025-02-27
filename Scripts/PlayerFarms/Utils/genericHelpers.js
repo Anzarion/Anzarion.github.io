@@ -86,30 +86,44 @@
     console.error(`${twSDK.scriptInfo()} Error: `, error);
   }
 
-  // ------------------------------
-  // Storage-Funktionen für vollständige Berichte
-  // ------------------------------
-  function getStoredReports() {
-    const stored = localStorage.getItem('playerReports');
-    return stored ? JSON.parse(stored) : [];
+// Eine einzige Funktion zum Abrufen oder Speichern im localStorage
+function localStore(key, data) {
+  if (typeof data === 'undefined') {
+    // Abrufen
+    try {
+      return JSON.parse(localStorage.getItem(key));
+    } catch (e) {
+      console.error("Fehler beim Lesen von " + key + ":", e);
+      return null;
+    }
+  } else {
+    // Speichern
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.error("Fehler beim Speichern von " + key + ":", e);
+    }
   }
+}
 
-  function setStoredReports(reports) {
-    localStorage.setItem('playerReports', JSON.stringify(reports));
-  }
+// Berichte
+function getStoredReports() {
+  return localStore('playerReports') || [];
+}
 
-  // ------------------------------
-  // Storage-Funktionen für Report-IDs
-  // ------------------------------
-  function getStoredReportIds() {
-    const stored = localStorage.getItem('storedReportIds');
-    return stored ? JSON.parse(stored) : [];
-  }
+function setStoredReports(reports) {
+  localStore('playerReports', reports);
+}
 
-  function setStoredReportIds(ids) {
-    console.log("Setze Report IDs:", ids);
-    localStorage.setItem('storedReportIds', JSON.stringify(ids));
-    console.log("localStorage (storedReportIds):", localStorage.getItem('storedReportIds'));
+// Report-IDs
+function getStoredReportIds() {
+  return localStore('storedReportIds') || [];
+}
+
+function setStoredReportIds(ids) {
+  localStore('storedReportIds', ids);
+}
+
   }
 
   function filterNewReports(reportDataArray) {
