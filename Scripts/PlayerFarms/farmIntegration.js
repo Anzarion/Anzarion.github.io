@@ -11,10 +11,7 @@
       console.warn('Ziel-Tabelle (#plunder_list) nicht gefunden!');
       return;
     }
-    // Header-Zeile hinzufügen
-    $plunderList.prepend(`<tr class="player_report_header" style="background-color:#DFF0D8;">
-      <td colspan="14"><strong>Spielerberichte</strong></td>
-    </tr>`);
+
     let rowsHtml = '';
     for (let i = 0, len = reports.length; i < len; i++) {
       const report = reports[i];
