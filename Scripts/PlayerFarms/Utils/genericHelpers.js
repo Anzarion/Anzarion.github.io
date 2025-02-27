@@ -10,10 +10,13 @@ function debugLog(functionName, message, data = null) {
   }
 }
   
-  function parseResourceValue(valueStr) {
-    var clean = valueStr.replace(/[.,\s]/g, "");
-    return parseInt(clean, 10);
-  }
+function parseResourceValue(valueStr) {
+  debugLog("parseResourceValue", "Startet mit input", valueStr);
+  var clean = valueStr.replace(/[.,\s]/g, "");
+  var result = parseInt(clean, 10);
+  debugLog("parseResourceValue", "Ergebnis", result);
+  return result;
+}
 
 function formatResourceOutput(value) {
   debugLog("formatResourceOutput", "Startet mit input", value);
