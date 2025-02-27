@@ -13,9 +13,9 @@
     }
 
     let rowsHtml = '';
-        const reportPromises = reports.map(async (report, i) => {
+    const reportPromises = reports.map(async (report, i) => {
       const attackable = await genericHelpers.canAttack(report.defender);
-            if (!attackable) return null;
+      if (!attackable) return null;
       const targetId = report.targetId || i;
       const viewIdMatch = report.reportUrl.match(/view=(\d+)/);
       const viewId = viewIdMatch ? viewIdMatch[1] : 0;
@@ -33,13 +33,13 @@
       const updatedWood = Math.min(updatedWoodRaw, plunderableCapacity);
       const updatedStone = Math.min(updatedStoneRaw, plunderableCapacity);
       const updatedIron = Math.min(updatedIronRaw, plunderableCapacity);
-
+      
       const formatResource = (resource, updatedResource, plunderableCapacity) => {
         if (!report.scoutedResources) return '';
         const formattedValue = genericHelpers.formatResourceOutput(updatedResource);
         return updatedResource === plunderableCapacity
-          ? `<span style="color: red;">${formattedValue}</span>`
-          : formattedValue;
+            ? `<span style="color: red;">${formattedValue}</span>`
+            : formattedValue;
       };
 
       const woodText = formatResource('wood', updatedWood, plunderableCapacity);
