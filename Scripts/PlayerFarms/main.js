@@ -33,9 +33,6 @@
   // Mach die Konfiguration global verfügbar
   window.scriptConfig = scriptConfig;
   var currentScriptUrl = (document.currentScript && document.currentScript.src) || '';
-  
-  // Eigene Debugging-Variable setzen
-  window.isDebug = scriptConfig.isDebug || true;
 
   // Hilfsfunktion, um ein Script asynchron zu laden
   function loadScript(url) {

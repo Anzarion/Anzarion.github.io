@@ -4,19 +4,11 @@
   // ------------------------------
   // Generische Hilfsfunktionen
   // ------------------------------
-function debugLog(functionName, message, data = null) {
-  if (window.isDebug) {
-    console.debug(`[DEBUG] ${functionName}: ${message}`, data ?? "");
-  }
-}
   
-function parseResourceValue(valueStr) {
-  debugLog("parseResourceValue", "Startet mit input", valueStr);
-  var clean = valueStr.replace(/[.,\s]/g, "");
-  var result = parseInt(clean, 10);
-  debugLog("parseResourceValue", "Ergebnis", result);
-  return result;
-}
+  function parseResourceValue(valueStr) {
+    var clean = valueStr.replace(/[.,\s]/g, "");
+    return parseInt(clean, 10);
+  }
 
 function formatResourceOutput(value) {
   debugLog("formatResourceOutput", "Startet mit input", value);
@@ -63,16 +55,13 @@ function formatResourceOutput(value) {
   // ------------------------------
   // Plünderbare Kapazität berechnen
   // ------------------------------
-function calculatePlunderableCapacity(buildingLevels) {
-  debugLog("calculatePlunderableCapacity", "Startet mit input", buildingLevels);
-  var storageLevel = buildingLevels.storage;
-  var hideLevel = buildingLevels.hide;
-  var warehouseCapacity = storageLevel > 0 ? warehouseCapacities[storageLevel - 1] : 0;
-  var hidingCapacity = hideLevel > 0 ? hidingPlaceCapacities[hideLevel - 1] : 0;
-  var result = warehouseCapacity - hidingCapacity;
-  debugLog("calculatePlunderableCapacity", "Ergebnis", result);
-  return result;
-}
+  function calculatePlunderableCapacity(buildingLevels) {
+    var storageLevel = buildingLevels.storage;
+    var hideLevel = buildingLevels.hide;
+    var warehouseCapacity = storageLevel > 0 ? warehouseCapacities[storageLevel - 1] : 0;
+    var hidingCapacity = hideLevel > 0 ? hidingPlaceCapacities[hideLevel - 1] : 0;
+    return warehouseCapacity - hidingCapacity;
+  }
 
   // ------------------------------
   // Zeitstempel parsen
