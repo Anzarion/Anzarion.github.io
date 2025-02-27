@@ -13,10 +13,9 @@
     }
 
     let rowsHtml = '';
-    for (let i = 0, len = reports.length; i < len; i++) {
-      const report = reports[i];
+    const reportPromises = reports.map(async (report, i) => {
       const attackable = await genericHelpers.canAttack(report.defender);
-      if (!attackable) continue;
+      if (!attackable) return null;
       const targetId = report.targetId || i;
       const viewIdMatch = report.reportUrl.match(/view=(\d+)/);
       const viewId = viewIdMatch ? viewIdMatch[1] : 0;
@@ -75,8 +74,12 @@
       rowHtml += genericHelpers.createTableCell(`<a href="/game.php?village=447&screen=place&target=${targetId}" onclick="return Accountmanager.farm.openRallyPoint(${targetId}, event)">
         <img src="https://dszz.innogamescdn.com/asset/449b3b09/graphic/buildings/place.png" alt="Rally point" />
       </a>`, 'text-align: center;');
-      rowsHtml += `<tr class="player_report row_${rowClass}">${rowHtml}</tr>`;
-    }
+      return `<tr class="player_report row_${rowClass}">${rowHtml}</tr>`;
+    });
+
+    const reportRows = await Promise.all(reportPromises);
+    rowsHtml = reportRows.filter(row => row !== null).join('');
+
     $plunderList.append(rowsHtml);
     console.log('Spielerberichte wurden in die Farm-Assistent-Tabelle integriert.');
   }

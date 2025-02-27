@@ -4,8 +4,11 @@
   // ------------------------------
   // Generische Hilfsfunktionen
   // ------------------------------
+  // Regex vorab kompilieren
+  const resourceValueRegex = /[.,\s]/g;
+
   function parseResourceValue(valueStr) {
-    var clean = valueStr.replace(/[.,\s]/g, "");
+    var clean = valueStr.replace(resourceValueRegex, "");
     return parseInt(clean, 10);
   }
 
@@ -120,11 +123,17 @@
   // ------------------------------
   // Weltenspeed und Ressourcenproduktion
   // ------------------------------
+  // Weltenspeed Caching
+  let cachedWorldSpeed = null;
+
   async function getWorldSpeed() {
+    if (cachedWorldSpeed) {
+      return cachedWorldSpeed;
+    }
     try {
       const worldConfig = await twSDK.getWorldConfig();
-      const worldSpeed = parseFloat(worldConfig.config.speed);
-      return worldSpeed;
+      cachedWorldSpeed = parseFloat(worldConfig.config.speed);
+      return cachedWorldSpeed;
     } catch (error) {
       console.error('Fehler beim Abrufen des Weltenspeed:', error);
       return 1;
@@ -199,36 +208,39 @@
   // ------------------------------
   // Filterung und Merging der Berichtsdaten
   // ------------------------------
-  async function filterReportsByVillage(reports) {
-    try {
-      const villages = await twSDK.worldDataAPI('village');
-      const villageMap = {};
-      villages.forEach(village => {
-        const [ , , villageX, villageY, playerId] = village;
-        const coords = `${villageX}|${villageY}`;
-        villageMap[coords] = playerId;
-      });
-      const filteredReports = reports.filter(report => {
-        if (!report.attackedCoords) return false;
-        const playerId = villageMap[report.attackedCoords];
-        return playerId && parseInt(playerId, 10) > 0;
-      });
-      return filteredReports;
-    } catch (error) {
-      console.error("Fehler beim Filtern der Berichte nach Dorf-Daten:", error);
-      return reports;
-    }
+  function filterReportsByVillage(reports) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const villages = await twSDK.worldDataAPI('village');
+        const villageMap = new Map();
+        villages.forEach(village => {
+          const [ , , villageX, villageY, playerId] = village;
+          const coords = `${villageX}|${villageY}`;
+          villageMap.set(coords, playerId);
+        });
+        const filteredReports = reports.filter(report => {
+          if (!report.attackedCoords) return false;
+          const playerId = villageMap.get(report.attackedCoords);
+          return playerId && parseInt(playerId, 10) > 0;
+        });
+        resolve(filteredReports);
+      } catch (error) {
+        console.error("Fehler beim Filtern der Berichte nach Dorf-Daten:", error);
+        reject(error);
+      }
+    });
   }
 
   function filterDuplicateReports(reports) {
-    return Object.values(reports.reduce((acc, report) => {
+    const reportMap = new Map();
+    reports.forEach(report => {
       const key = report.defenderCoords || report.defender;
       const currentTime = Date.parse(report.timestamp) || 0;
-      if (!acc[key] || currentTime > (Date.parse(acc[key].timestamp) || 0)) {
-        acc[key] = report;
+      if (!reportMap.has(key) || currentTime > (Date.parse(reportMap.get(key).timestamp) || 0)) {
+        reportMap.set(key, report);
       }
-      return acc;
-    }, {}));
+    });
+    return Array.from(reportMap.values());
   }
 
   function formatReportTime(timestampStr) {

@@ -50,6 +50,9 @@
       await loadScript("https://twscripts.dev/scripts/twSDK.js?url=" + encodeURIComponent(currentScriptUrl));
 
       // Direkt nach dem Laden von twSDK die Initialisierung mit unserer Konfiguration vornehmen:
+      if (typeof twSDK === 'undefined') {
+        throw new Error('twSDK wurde nicht geladen.');
+      }
       await twSDK.init(scriptConfig);
 
       // Beispielhafte Prüfung, ob wir uns auf der richtigen Seite befinden:
@@ -70,6 +73,7 @@
       }
     } catch (e) {
       console.error("Fehler bei der Initialisierung:", e);
+      UI.ErrorMessage(twSDK.tt('There was an error!') + ': ' + e.message);
     }
   }
   init();
