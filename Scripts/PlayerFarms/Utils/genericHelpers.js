@@ -49,17 +49,6 @@
   }
 
   // ------------------------------
-  // Plünderbare Kapazität berechnen
-  // ------------------------------
-  function calculatePlunderableCapacity(buildingLevels) {
-    var storageLevel = buildingLevels.storage;
-    var hideLevel = buildingLevels.hide;
-    var warehouseCapacity = storageLevel > 0 ? warehouseCapacities[storageLevel - 1] : 0;
-    var hidingCapacity = hideLevel > 0 ? hidingPlaceCapacities[hideLevel - 1] : 0;
-    return warehouseCapacity - hidingCapacity;
-  }
-
-  // ------------------------------
   // Zeitstempel parsen
   // ------------------------------
   function parseReportDate(dateString) {
@@ -117,23 +106,23 @@
     return reportDataArray.filter(report => !storedIds.includes(report.reportId));
   }
 
-  // ------------------------------
-  // Weltenspeed und Ressourcenproduktion
-  // ------------------------------
-  async function calculateProducedResources(lastReportTimestamp, mineLevel) {
-    try {
-      const worldConfig = await twSDK.getWorldConfig();
-      const worldSpeed = parseFloat(worldConfig.config.speed);
-      const now = twSDK.getServerDateTimeObject();
-      const attackTime = new Date(lastReportTimestamp);
-      const elapsedHours = (now - attackTime) / (1000 * 60 * 60);
-      const productionRate = parseFloat(twSDK.resPerHour[mineLevel]);
-      return Math.round(worldSpeed * productionRate * elapsedHours);
-    } catch (error) {
-      console.error("Fehler bei der Berechnung der produzierten Ressourcen:", error);
-      return 0;
+  async function calculateResources(buildingLevels, lastReportTimestamp = null) {
+    const worldSpeed = parseFloat(await twSDK.getWorldConfig().config.speed);
+
+    if (lastReportTimestamp) {
+        const now = twSDK.getServerDateTimeObject();
+        const elapsedHours = (now - new Date(lastReportTimestamp)) / (1000 * 60 * 60);
+        return {
+            wood: Math.round(worldSpeed * twSDK.resPerHour[buildingLevels.timberCamp] * elapsedHours),
+            stone: Math.round(worldSpeed * twSDK.resPerHour[buildingLevels.clayPit] * elapsedHours),
+            iron: Math.round(worldSpeed * twSDK.resPerHour[buildingLevels.ironMine] * elapsedHours)
+        };
+    } else {
+        const warehouseCapacity = buildingLevels.storage > 0 ? warehouseCapacities[buildingLevels.storage - 1] : 0;
+        const hidingCapacity = buildingLevels.hide > 0 ? hidingPlaceCapacities[buildingLevels.hide - 1] : 0;
+        return warehouseCapacity - hidingCapacity;
     }
-  }
+}
 
   async function canAttack(defenderName) {
     try {
@@ -253,7 +242,7 @@
     findRowByLabel,
     createTableCell,
     getReportData,
-    calculatePlunderableCapacity,
+    calculateResources,
     parseReportDate,
     handleError,
     getStoredReports,
@@ -261,13 +250,10 @@
     getStoredReportIds,
     setStoredReportIds,
     filterNewReports,
-    calculateProducedResources,
     canAttack,
     parseBuildingData,
     filterReportsByVillage,
     filterDuplicateReports,
     formatReportTime,
-    warehouseCapacities,
-    hidingPlaceCapacities
   };
 })();

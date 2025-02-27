@@ -20,24 +20,23 @@
       const viewIdMatch = report.reportUrl.match(/view=(\d+)/);
       const viewId = viewIdMatch ? viewIdMatch[1] : 0;
       const rowClass = (i % 2 === 0) ? 'a' : 'b';
-      const producedWood = await genericHelpers.calculateProducedResources(report.timestamp, report.buildingLevels.timberCamp);
-      const producedStone = await genericHelpers.calculateProducedResources(report.timestamp, report.buildingLevels.clayPit);
-      const producedIron  = await genericHelpers.calculateProducedResources(report.timestamp, report.buildingLevels.ironMine);
+      const resources = await genericHelpers.calculateResources(report.buildingLevels, report.timestamp);
+      const { wood: producedWood, stone: producedStone, iron: producedIron } = resources;    
       const originalWood = report.scoutedResources ? report.scoutedResources.wood : 0;
       const originalStone = report.scoutedResources ? report.scoutedResources.stone : 0;
       const originalIron = report.scoutedResources ? report.scoutedResources.iron : 0;
+      const plunderableCapacity = await genericHelpers.calculateResources(report.buildingLevels);
       const updatedWoodRaw = originalWood + producedWood;
       const updatedStoneRaw = originalStone + producedStone;
       const updatedIronRaw = originalIron + producedIron;
-      const plunderableCapacity = genericHelpers.calculatePlunderableCapacity(report.buildingLevels);
       const updatedWood = Math.min(updatedWoodRaw, plunderableCapacity);
       const updatedStone = Math.min(updatedStoneRaw, plunderableCapacity);
       const updatedIron = Math.min(updatedIronRaw, plunderableCapacity);
       
-      const formatResource = (resource, updatedResource, plunderableCapacity) => {
+      const formatResource = (resource, updatedResource, capacity) => {
         if (!report.scoutedResources) return '';
         const formattedValue = genericHelpers.formatResourceOutput(updatedResource);
-        return updatedResource === plunderableCapacity
+        return updatedResource === capacity
             ? `<span style="color: red;">${formattedValue}</span>`
             : formattedValue;
       };
