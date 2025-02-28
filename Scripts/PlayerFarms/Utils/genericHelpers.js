@@ -31,23 +31,70 @@
   // ------------------------------
   // Berichtsdaten extrahieren
   // ------------------------------
-  function getReportData() {
+function getReportData() {
+    console.log("[DEBUG] Starte `getReportData()` mit vollständiger Seitenerfassung...");
+
     const reportData = [];
-    jQuery('#report_list tbody tr').each((_, row) => {
-      const classList = row.className.split(' ');
-      const reportClass = classList.find(cls => cls.startsWith('report-'));
-      if (!reportClass) return;
-      const reportId = reportClass.split('-')[1];
-      const reportLink = jQuery(row).find('.report-link').attr('href');
-      if (!reportLink) return;
-      const rowText = jQuery(row).text();
-      const coordMatches = rowText.match(/\d{1,3}\|\d{1,3}/g);
-      // Annahme: der zweite Treffer enthält die angegriffenen Koordinaten
-      const attackedCoords = (coordMatches && coordMatches.length > 1) ? coordMatches[1] : null;
-      reportData.push({ reportId, reportLink, attackedCoords });
+
+    // **Neue Methode zur Seitenerkennung**
+    const pageNavTd = document.querySelector("td[colspan='4'][align='center']");
+    if (!pageNavTd) {
+        console.warn("[DEBUG] Keine Seitennavigation gefunden.");
+        return [];
+    }
+
+    const pageLinks = pageNavTd.querySelectorAll("a.paged-nav-item");
+    let fromValues = [0];
+
+    pageLinks.forEach(link => {
+        const match = link.innerText.match(/\d+/);
+        if (match) {
+            const fromValue = parseInt(link.href.match(/from=(\d+)/)?.[1] || "0", 10);
+            if (!fromValues.includes(fromValue)) {
+                fromValues.push(fromValue);
+            }
+        }
     });
+
+    const baseUrl = window.location.origin + window.location.pathname;
+    const pageUrls = fromValues.map(from => `${baseUrl}?village=${game_data.village.id}&screen=report&mode=attack&from=${from}`);
+
+    console.log("[DEBUG] Gefundene Berichtsseiten-URLs:", pageUrls);
+
+    // **Laden & Parsen der Berichtsübersichtsseiten**
+    twSDK.getAll(
+        pageUrls,
+        function (index, data) {
+            console.log(`[DEBUG] Verarbeite Berichtsübersicht Seite ${index + 1}/${pageUrls.length}`);
+
+            const doc = new DOMParser().parseFromString(data, "text/html");
+            jQuery(doc).find('#report_list tbody tr').each((_, row) => {
+                const classList = row.className.split(' ');
+                const reportClass = classList.find(cls => cls.startsWith('report-'));
+                if (!reportClass) return;
+
+                const reportId = reportClass.split('-')[1];
+                const reportLink = jQuery(row).find('.report-link').attr('href');
+                if (!reportLink) return;
+
+                const rowText = jQuery(row).text();
+                const coordMatches = rowText.match(/\d{1,3}\|\d{1,3}/g);
+                const attackedCoords = (coordMatches && coordMatches.length > 1) ? coordMatches[1] : null;
+
+                reportData.push({ reportId, reportLink, attackedCoords });
+            });
+        },
+        function () {
+            console.log("[DEBUG] Alle Seiten verarbeitet! Berichtsdaten:", reportData);
+            window.allReports = reportData; // Speichern für `reportProcessing.js`
+        },
+        function (error) {
+            console.warn("[DEBUG] Fehler beim Laden einer Seite:", error);
+        }
+    );
+
     return reportData;
-  }
+}
 
   // ------------------------------
   // Plünderbare Kapazität berechnen
