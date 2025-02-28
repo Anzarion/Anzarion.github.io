@@ -31,7 +31,7 @@
   // ------------------------------
   // Berichtsdaten extrahieren
   // ------------------------------
-function getReportData() {
+async function getReportData() {
     console.log("[DEBUG] Starte `getReportData()` mit vollständiger Seitenerfassung...");
 
     const reportData = [];
@@ -61,13 +61,16 @@ function getReportData() {
 
     console.log("[DEBUG] Gefundene Berichtsseiten-URLs:", pageUrls);
 
-    // **Laden & Parsen der Berichtsübersichtsseiten**
-    twSDK.getAll(
-        pageUrls,
-        function (index, data) {
+    // **Laden & Parsen der Berichtsübersichtsseiten mit `await`**
+    try {
+        const responses = await twSDK.getAll(pageUrls);
+
+        for (let index = 0; index < responses.length; index++) {
             console.log(`[DEBUG] Verarbeite Berichtsübersicht Seite ${index + 1}/${pageUrls.length}`);
 
+            const data = responses[index];
             const doc = new DOMParser().parseFromString(data, "text/html");
+
             jQuery(doc).find('#report_list tbody tr').each((_, row) => {
                 const classList = row.className.split(' ');
                 const reportClass = classList.find(cls => cls.startsWith('report-'));
@@ -83,18 +86,17 @@ function getReportData() {
 
                 reportData.push({ reportId, reportLink, attackedCoords });
             });
-        },
-        function () {
-            console.log("[DEBUG] Alle Seiten verarbeitet! Berichtsdaten:", reportData);
-            window.allReports = reportData; // Speichern für `reportProcessing.js`
-        },
-        function (error) {
-            console.warn("[DEBUG] Fehler beim Laden einer Seite:", error);
         }
-    );
 
-    return reportData;
+        console.log("[DEBUG] Alle Seiten verarbeitet! Berichtsdaten:", reportData);
+        return reportData;
+
+    } catch (error) {
+        console.warn("[DEBUG] Fehler beim Laden der Seiten:", error);
+        return [];
+    }
 }
+
 
   // ------------------------------
   // Plünderbare Kapazität berechnen
