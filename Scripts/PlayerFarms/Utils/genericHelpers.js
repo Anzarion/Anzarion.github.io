@@ -62,44 +62,39 @@ async function getReportData() {
     console.log("[DEBUG] Gefundene Berichtsseiten-URLs:", pageUrls);
 
     // **Laden & Parsen der Berichtsübersichtsseiten mit `await`**
- try {
-    const responses = await twSDK.getAll(pageUrls);
-    
-    if (!responses || !Array.isArray(responses)) {
-        throw new Error("twSDK.getAll() hat ungültige Daten zurückgegeben.");
-    }
+    try {
+        const responses = await twSDK.getAll(pageUrls);
 
-    for (let index = 0; index < responses.length; index++) {
-        console.log(`[DEBUG] Verarbeite Berichtsübersicht Seite ${index + 1}/${pageUrls.length}`);
+        for (let index = 0; index < responses.length; index++) {
+            console.log(`[DEBUG] Verarbeite Berichtsübersicht Seite ${index + 1}/${pageUrls.length}`);
 
-        if (!responses[index]) {
-            console.warn(`[WARN] Kein Inhalt für Seite ${index + 1} erhalten.`);
-            continue;
+            const data = responses[index];
+            const doc = new DOMParser().parseFromString(data, "text/html");
+
+            jQuery(doc).find('#report_list tbody tr').each((_, row) => {
+                const classList = row.className.split(' ');
+                const reportClass = classList.find(cls => cls.startsWith('report-'));
+                if (!reportClass) return;
+
+                const reportId = reportClass.split('-')[1];
+                const reportLink = jQuery(row).find('.report-link').attr('href');
+                if (!reportLink) return;
+
+                const rowText = jQuery(row).text();
+                const coordMatches = rowText.match(/\d{1,3}\|\d{1,3}/g);
+                const attackedCoords = (coordMatches && coordMatches.length > 1) ? coordMatches[1] : null;
+
+                reportData.push({ reportId, reportLink, attackedCoords });
+            });
         }
 
-        const doc = new DOMParser().parseFromString(responses[index], "text/html");
-        jQuery(doc).find('#report_list tbody tr').each((_, row) => {
-            const classList = row.className.split(' ');
-            const reportClass = classList.find(cls => cls.startsWith('report-'));
-            if (!reportClass) return;
-            const reportId = reportClass.split('-')[1];
-            const reportLink = jQuery(row).find('.report-link').attr('href');
-            if (!reportLink) return;
-            const rowText = jQuery(row).text();
-            const coordMatches = rowText.match(/\d{1,3}\|\d{1,3}/g);
-            const attackedCoords = (coordMatches && coordMatches.length > 1) ? coordMatches[1] : null;
-            reportData.push({ reportId, reportLink, attackedCoords });
-        });
+        console.log("[DEBUG] Alle Seiten verarbeitet! Berichtsdaten:", reportData);
+        return reportData;
+
+    } catch (error) {
+        console.warn("[DEBUG] Fehler beim Laden der Seiten:", error);
+        return [];
     }
-
-    console.log("[DEBUG] Alle Seiten verarbeitet! Berichtsdaten:", reportData);
-    return reportData;
-
-} catch (error) {
-    console.warn("[DEBUG] Fehler beim Laden der Seiten:", error);
-    return [];
-}
-
 }
 
 
