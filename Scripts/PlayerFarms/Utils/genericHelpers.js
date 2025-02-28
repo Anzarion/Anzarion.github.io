@@ -32,75 +32,81 @@
   // Berichtsdaten extrahieren
   // ------------------------------
 async function getReportData() {
-    console.log("[DEBUG] Starte `getReportData()` mit vollständiger Seitenerfassung...");
+  console.log("[DEBUG] Starte `getReportData()` mit vollständiger Seitenerfassung...");
+  const reportData = [];
+  
+  // Suchen der Seitennavigation
+  const pageNavTd = document.querySelector("td[colspan='4'][align='center']");
+  if (!pageNavTd) {
+    console.warn("[DEBUG] Keine Seitennavigation gefunden.");
+    return [];
+  }
 
-    const reportData = [];
-
-    // **Neue Methode zur Seitenerkennung**
-    const pageNavTd = document.querySelector("td[colspan='4'][align='center']");
-    if (!pageNavTd) {
-        console.warn("[DEBUG] Keine Seitennavigation gefunden.");
-        return [];
+  // Ermitteln der Berichtsseiten-URLs anhand der Navigation
+  const pageLinks = pageNavTd.querySelectorAll("a.paged-nav-item");
+  let fromValues = [0];
+  pageLinks.forEach(link => {
+    const match = link.innerText.match(/\d+/);
+    if (match) {
+      const fromValue = parseInt(link.href.match(/from=(\d+)/)?.[1] || "0", 10);
+      if (!fromValues.includes(fromValue)) {
+        fromValues.push(fromValue);
+      }
     }
+  });
 
-    const pageLinks = pageNavTd.querySelectorAll("a.paged-nav-item");
-    let fromValues = [0];
+  const baseUrl = window.location.origin + window.location.pathname;
+  const pageUrls = fromValues.map(from => `${baseUrl}?village=${game_data.village.id}&screen=report&mode=attack&from=${from}`);
+  console.log("[DEBUG] Gefundene Berichtsseiten-URLs:", pageUrls);
 
-    pageLinks.forEach(link => {
-        const match = link.innerText.match(/\d+/);
-        if (match) {
-            const fromValue = parseInt(link.href.match(/from=(\d+)/)?.[1] || "0", 10);
-            if (!fromValues.includes(fromValue)) {
-                fromValues.push(fromValue);
-            }
+  // Verwenden eines Promise-Wrappers, um auf alle asynchronen Requests zu warten
+  try {
+    const responses = await new Promise((resolve, reject) => {
+      const responsesArr = [];
+      twSDK.getAll(
+        pageUrls,
+        (index, data) => {
+          responsesArr[index] = data;
+        },
+        () => {
+          resolve(responsesArr);
+        },
+        (error) => {
+          reject(error);
         }
+      );
     });
 
-    const baseUrl = window.location.origin + window.location.pathname;
-    const pageUrls = fromValues.map(from => `${baseUrl}?village=${game_data.village.id}&screen=report&mode=attack&from=${from}`);
-
-    console.log("[DEBUG] Gefundene Berichtsseiten-URLs:", pageUrls);
-
-    // **Laden & Parsen der Berichtsübersichtsseiten mit `await`**
- try {
-    const responses = await twSDK.getAll(pageUrls);
-    
-    if (!responses || !Array.isArray(responses)) {
-        throw new Error("twSDK.getAll() hat ungültige Daten zurückgegeben.");
-    }
-
+    // Verarbeitung der Seiteninhalte
     for (let index = 0; index < responses.length; index++) {
-        console.log(`[DEBUG] Verarbeite Berichtsübersicht Seite ${index + 1}/${pageUrls.length}`);
-
-        if (!responses[index]) {
-            console.warn(`[WARN] Kein Inhalt für Seite ${index + 1} erhalten.`);
-            continue;
-        }
-
-        const doc = new DOMParser().parseFromString(responses[index], "text/html");
-        jQuery(doc).find('#report_list tbody tr').each((_, row) => {
-            const classList = row.className.split(' ');
-            const reportClass = classList.find(cls => cls.startsWith('report-'));
-            if (!reportClass) return;
-            const reportId = reportClass.split('-')[1];
-            const reportLink = jQuery(row).find('.report-link').attr('href');
-            if (!reportLink) return;
-            const rowText = jQuery(row).text();
-            const coordMatches = rowText.match(/\d{1,3}\|\d{1,3}/g);
-            const attackedCoords = (coordMatches && coordMatches.length > 1) ? coordMatches[1] : null;
-            reportData.push({ reportId, reportLink, attackedCoords });
-        });
+      console.log(`[DEBUG] Verarbeite Berichtsübersicht Seite ${index + 1}/${pageUrls.length}`);
+      if (!responses[index]) {
+        console.warn(`[WARN] Kein Inhalt für Seite ${index + 1} erhalten.`);
+        continue;
+      }
+      const doc = new DOMParser().parseFromString(responses[index], "text/html");
+      jQuery(doc).find('#report_list tbody tr').each((_, row) => {
+        const classList = row.className.split(' ');
+        const reportClass = classList.find(cls => cls.startsWith('report-'));
+        if (!reportClass) return;
+        const reportId = reportClass.split('-')[1];
+        const reportLink = jQuery(row).find('.report-link').attr('href');
+        if (!reportLink) return;
+        const rowText = jQuery(row).text();
+        const coordMatches = rowText.match(/\d{1,3}\|\d{1,3}/g);
+        const attackedCoords = (coordMatches && coordMatches.length > 1) ? coordMatches[1] : null;
+        reportData.push({ reportId, reportLink, attackedCoords });
+      });
     }
 
     console.log("[DEBUG] Alle Seiten verarbeitet! Berichtsdaten:", reportData);
     return reportData;
-
-} catch (error) {
+  } catch (error) {
     console.warn("[DEBUG] Fehler beim Laden der Seiten:", error);
     return [];
+  }
 }
 
-}
 
 
   // ------------------------------
