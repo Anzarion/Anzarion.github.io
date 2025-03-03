@@ -62,6 +62,7 @@
     
     // Ressourcen parsen
 // Standardobjekt mit allen Ressourcen initial auf 0
+// Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
 const $resTd = $htmlDoc.find("#attack_spy_resources")
@@ -69,18 +70,20 @@ const $resTd = $htmlDoc.find("#attack_spy_resources")
   .siblings("td").first();
 
 if ($resTd.length) {
-  // Iteriere über alle <span class="nowrap">-Elemente innerhalb des TD
+  // Iteriere über alle <span class="nowrap"> Elemente innerhalb des TD
   $resTd.find('span.nowrap').each(function() {
     const $nowrap = $(this);
-    // Finde das Icon-Element, um den Ressourcentyp zu bestimmen
-    const $icon = $nowrap.find('span.icon');
-    const resourceName = $icon.attr('data-title'); // z.B. "Lehm" oder "Eisen"
+    // Bestimme den Ressourcentyp über das data-title-Attribut des enthaltenen Icon-Elements
+    const resourceName = $nowrap.find('span.icon').attr('data-title');
     
-    // Extrahiere den Zahlenwert: Entferne alle Kindelemente und trimme den restlichen Text
-    const numberStr = $nowrap.clone().children().remove().end().text().trim();
-    const value = genericHelpers.parseResourceValue(numberStr);
+    // Extrahiere den reinen Textknoten (numerischer Wert)
+    const resourceText = $nowrap.contents().filter(function() {
+      return this.nodeType === 3; // Node.TEXT_NODE
+    }).text().trim();
     
-    // Mapping der angezeigten Ressourcennamen auf unsere internen Keys
+    const value = genericHelpers.parseResourceValue(resourceText);
+    
+    // Mapping: Übersetze den angezeigten Ressourcennamen in unseren internen Schlüssel
     const mapping = {
       'Holz': 'wood',
       'Wood': 'wood',
@@ -96,6 +99,7 @@ if ($resTd.length) {
     }
   });
 }
+
 
 
     
