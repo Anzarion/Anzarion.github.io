@@ -61,23 +61,32 @@
     const timestamp = rawTimestamp ? genericHelpers.parseReportDate(rawTimestamp).toISOString() : "";
     
     // Ressourcen parsen
-    let scoutedResources = null;
-    const $resTd = $htmlDoc.find("#attack_spy_resources").find("th:contains('Erspähte Rohstoffe:')").siblings("td").first();
-    if ($resTd.length) {
-      const resText = $resTd.text().trim();
-      if (resText.toLowerCase() === 'none') {
-        scoutedResources = { wood: 0, stone: 0, iron: 0 };
-      } else {
-        const parts = resText.split(/\s+/);
-        if (parts.length >= 3) {
-          scoutedResources = {
-            wood: genericHelpers.parseResourceValue(parts[0]),
-            stone: genericHelpers.parseResourceValue(parts[1]),
-            iron: genericHelpers.parseResourceValue(parts[2])
-          };
-        }
-      }
+let scoutedResources = null;
+const $resTd = $htmlDoc.find("#attack_spy_resources")
+  .find("th:contains('Erkannte Ressourcen:')")
+  .siblings("td").first();
+
+if ($resTd.length) {
+  const resText = $resTd.text().trim();
+  if (resText.toLowerCase() === 'none') {
+    scoutedResources = { wood: 0, stone: 0, iron: 0 };
+  } else {
+    const parts = resText.split(/\s+/);
+    if (parts.length >= 3) {
+      scoutedResources = {
+        wood: genericHelpers.parseResourceValue(parts[0]),
+        stone: genericHelpers.parseResourceValue(parts[1]),
+        iron: genericHelpers.parseResourceValue(parts[2])
+      };
     }
+  }
+}
+
+// Falls keine Ressourcen ermittelt wurden, setze Standardwerte (0)
+if (!scoutedResources) {
+  scoutedResources = { wood: 0, stone: 0, iron: 0 };
+}
+
     
     // Gebäudedaten parsen
     let buildingLevels = { timberCamp: 0, clayPit: 0, ironMine: 0, wall: 0, storage: 0, hide: 0 };
