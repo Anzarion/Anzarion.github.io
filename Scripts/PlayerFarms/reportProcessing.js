@@ -63,6 +63,7 @@
     // Ressourcen parsen
 // Standardobjekt mit allen Ressourcen initial auf 0
 // Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
+// Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
 const $resTd = $htmlDoc.find("#attack_spy_resources")
@@ -70,35 +71,45 @@ const $resTd = $htmlDoc.find("#attack_spy_resources")
   .siblings("td").first();
 
 if ($resTd.length) {
-  // Iteriere über alle <span class="nowrap"> Elemente innerhalb des TD
-  $resTd.find('span.nowrap').each(function() {
-    const $nowrap = $(this);
-    // Bestimme den Ressourcentyp über das data-title-Attribut des enthaltenen Icon-Elements
-    const resourceName = $nowrap.find('span.icon').attr('data-title');
-    
-    // Extrahiere den reinen Textknoten (numerischer Wert)
-    const resourceText = $nowrap.contents().filter(function() {
-      return this.nodeType === 3; // Node.TEXT_NODE
-    }).text().trim();
-    
-    const value = genericHelpers.parseResourceValue(resourceText);
-    
-    // Mapping: Übersetze den angezeigten Ressourcennamen in unseren internen Schlüssel
-    const mapping = {
-      'Holz': 'wood',
-      'Wood': 'wood',
-      'Lehm': 'stone',
-      'Clay': 'stone',
-      'Eisen': 'iron',
-      'Iron': 'iron'
+  const resText = $resTd.text().trim();
+  const parts = resText.split(/\s+/);
+
+  if (parts.length === 3) {
+    // Originalfall: Es wurden alle drei Werte gefunden.
+    scoutedResources = {
+      wood: genericHelpers.parseResourceValue(parts[0]),
+      stone: genericHelpers.parseResourceValue(parts[1]),
+      iron: genericHelpers.parseResourceValue(parts[2])
     };
-    
-    const key = mapping[resourceName];
-    if (key) {
-      scoutedResources[key] = value;
-    }
-  });
+  } else {
+    // Fallback: Falls nicht genau drei Zahlen vorhanden sind,
+    // gehe jedes <span class="nowrap"> einzeln durch, um den Ressourcentyp und den zugehörigen Wert zu ermitteln.
+    $resTd.find('span.nowrap').each(function() {
+      const $span = $(this);
+      // Ermittle den angezeigten Ressourcentyp über das data-title-Attribut des Icon-Elements.
+      const resourceType = $span.find('span.icon').attr('data-title');
+      // Klone das Element, entferne alle Kindknoten und extrahiere den reinen Text (der numerische Wert).
+      const valueStr = $span.clone().children().remove().end().text().trim();
+      const value = genericHelpers.parseResourceValue(valueStr);
+
+      // Mapping von angezeigtem Ressourcennamen zu internen Schlüsseln
+      const mapping = {
+        'Holz': 'wood',
+        'Wood': 'wood',
+        'Lehm': 'stone',
+        'Clay': 'stone',
+        'Eisen': 'iron',
+        'Iron': 'iron'
+      };
+      
+      const key = mapping[resourceType];
+      if (key) {
+        scoutedResources[key] = value;
+      }
+    });
+  }
 }
+
 
 
 
