@@ -103,7 +103,7 @@ const resourceWidgetHTML = `
   </div>
 `;
 
-twSDK.renderFixedWidget(resourceWidgetHTML, scriptConfig.scriptData.prefix, 'resourceWidget');
+twSDK.renderBoxWidget(resourceWidgetHTML, scriptConfig.scriptData.prefix, 'resourceWidget');
 
     
     // Gebäudedaten parsen
