@@ -123,21 +123,36 @@ async function getReportData() {
   // ------------------------------
   // Zeitstempel parsen
   // ------------------------------
-  function parseReportDate(dateString) {
-    if (dateString.includes(',')) {
-      const lastColonIndex = dateString.lastIndexOf(':');
-      if (lastColonIndex !== -1) {
-        dateString = dateString.substring(0, lastColonIndex) + '.' + dateString.substring(lastColonIndex + 1);
-      }
-      return new Date(dateString);
-    } else {
-      const [datePart, timePart] = dateString.split(' ');
-      if (!datePart || !timePart) return new Date(dateString);
-      const [day, month, year] = datePart.split('/');
-      const isoString = `${year}-${month}-${day}T${timePart}`;
-      return new Date(isoString);
+function parseReportDate(dateString) {
+  // Englisches Format: z.B. "Mar 03, 2025 11:06:14:684"
+  if (dateString.includes(',')) {
+    // Ersetze den letzten Doppelpunkt (der die Millisekunden trennt) durch einen Punkt
+    const lastColonIndex = dateString.lastIndexOf(':');
+    if (lastColonIndex !== -1) {
+      dateString = dateString.substring(0, lastColonIndex) + '.' + dateString.substring(lastColonIndex + 1);
     }
+    // Nun sollte z. B. "Mar 03, 2025 11:06:14.684" entstehen, das Date() meist korrekt parsen kann
+    return new Date(dateString);
+  } else {
+    // Deutsches Format: z.B. "03.03.25 11:01:12"
+    const [datePart, timePart] = dateString.split(' ');
+    if (!datePart || !timePart) return new Date(dateString);
+
+    // Erkennen des Datums-Trenners (Punkt oder Slash)
+    const delimiter = datePart.includes('.') ? '.' : '/';
+    let [day, month, year] = datePart.split(delimiter);
+
+    // Falls das Jahr nur 2 Ziffern hat, wird "20" vorangestellt
+    if (year.length === 2) {
+      year = "20" + year;
+    }
+
+    // Erstelle einen ISO-kompatiblen String (YYYY-MM-DDTHH:MM:SS)
+    const isoString = `${year}-${month}-${day}T${timePart}`;
+    return new Date(isoString);
   }
+}
+
 
   // ------------------------------
   // Fehlerbehandlung
