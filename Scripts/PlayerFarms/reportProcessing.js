@@ -50,19 +50,19 @@
     const $htmlDoc = jQuery(htmlDoc);
     
     // Defender extrahieren
-    const $defenderRow = genericHelpers.findRowByLabel($htmlDoc, "Defender:");
+    const $defenderRow = genericHelpers.findRowByLabel($htmlDoc, "Verteidiger:");
     const defenderAnchor = $defenderRow.find('a[href*="screen=info_player"]').first();
     if ($defenderRow.length === 0 || !defenderAnchor.length) continue;
     const defenderName = twSDK.cleanString(defenderAnchor.text().trim());
     
     // Zeitstempel extrahieren
-    const $battleRow = genericHelpers.findRowByLabel($htmlDoc, "Battle time");
+    const $battleRow = genericHelpers.findRowByLabel($htmlDoc, "Kampfzeit");
     const rawTimestamp = $battleRow.length ? $battleRow.find("td").eq(1).text().trim() : "";
     const timestamp = rawTimestamp ? genericHelpers.parseReportDate(rawTimestamp).toISOString() : "";
     
     // Ressourcen parsen
     let scoutedResources = null;
-    const $resTd = $htmlDoc.find("#attack_spy_resources").find("th:contains('Resources scouted:')").siblings("td").first();
+    const $resTd = $htmlDoc.find("#attack_spy_resources").find("th:contains('Erspähte Rohstoffe:')").siblings("td").first();
     if ($resTd.length) {
       const resText = $resTd.text().trim();
       if (resText.toLowerCase() === 'none') {
@@ -89,11 +89,11 @@
     // Koordinaten extrahieren
     let attackerCoords = "";
     let destinationCoords = "";
-    const $originRow = genericHelpers.findRowByLabel($htmlDoc, "Origin:");
+    const $originRow = genericHelpers.findRowByLabel($htmlDoc, "Herkunft:");
     if ($originRow.length) {
       attackerCoords = twSDK.getLastCoordFromString($originRow.find("td").eq(1).text());
     }
-    const $destinationRow = genericHelpers.findRowByLabel($htmlDoc, "Destination:");
+    const $destinationRow = genericHelpers.findRowByLabel($htmlDoc, "Ziel:");
     if ($destinationRow.length) {
       destinationCoords = twSDK.getLastCoordFromString($destinationRow.find("td").eq(1).text());
     }
