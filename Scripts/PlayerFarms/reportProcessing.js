@@ -61,7 +61,7 @@
     const timestamp = rawTimestamp ? genericHelpers.parseReportDate(rawTimestamp).toISOString() : "";
     
     // Ressourcen parsen
-// Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
+// Ressourcen parsen – in reportProcessing.js
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
 const $resTd = $htmlDoc.find("#attack_spy_resources")
@@ -69,31 +69,28 @@ const $resTd = $htmlDoc.find("#attack_spy_resources")
   .siblings("td").first();
 
 if ($resTd.length) {
-  // Iteriere über alle Elemente, die innerhalb des TD die Ressourcenzahlen enthalten
-  $resTd.find("span.nowrap").each(function() {
-    const $span = $(this);
-    // Ermittle den Ressourcentyp über das data-title-Attribut des enthaltenen Icon-Elements
-    const resourceType = ($span.find("span.icon").attr("data-title") || "").toLowerCase();
-    // Extrahiere den reinen Text (numerischer Wert) – entferne dabei alle nicht-numerischen Zeichen
-    const value = parseInt($span.text().replace(/[^\d]/g, "")) || 0;
-    
-    // Ordne den Wert anhand des ermittelten Ressourcentyps zu
-    switch (resourceType) {
-      case "holz":
-      case "wood":
-        scoutedResources.wood = value;
+  // Hilfsfunktion, die für eine gegebene Ressource (z. B. Holz) den numerischen Wert extrahiert.
+  function extractResource(resourceNames) {
+    let value = 0;
+    // Gehe die möglichen Namen (Deutsch/Englisch) durch und suche das entsprechende Icon
+    for (let i = 0; i < resourceNames.length; i++) {
+      const name = resourceNames[i];
+      const $icon = $resTd.find(`span.icon[data-title='${name}']`);
+      if ($icon.length) {
+        // Das übergeordnete Element (Parent) enthält den Zahlenwert als Text.
+        const text = $icon.parent().text();
+        value = parseInt(text.replace(/[^\d]/g, "")) || 0;
         break;
-      case "lehm":
-      case "clay":
-        scoutedResources.stone = value;
-        break;
-      case "eisen":
-      case "iron":
-        scoutedResources.iron = value;
-        break;
+      }
     }
-  });
+    return value;
+  }
+  
+  scoutedResources.wood  = extractResource(["Holz", "Wood"]);
+  scoutedResources.stone = extractResource(["Lehm", "Clay"]);
+  scoutedResources.iron  = extractResource(["Eisen", "Iron"]);
 }
+
     
     // Gebäudedaten parsen
     let buildingLevels = { timberCamp: 0, clayPit: 0, ironMine: 0, wall: 0, storage: 0, hide: 0 };
