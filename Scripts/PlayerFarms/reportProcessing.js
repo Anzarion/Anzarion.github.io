@@ -62,36 +62,37 @@
     
     // Ressourcen parsen
 // Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
+// Standardobjekt: Alle Ressourcen initial auf 0 setzen
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
+// Suche den <td>-Bereich, in dem die Rohstoffwerte stehen (neben "Erspähte Rohstoffe:")
 const $resTd = $htmlDoc.find("#attack_spy_resources")
   .find("th:contains('Erspähte Rohstoffe:')")
   .siblings("td").first();
 
 if ($resTd.length) {
-  // Für Holz: Suche das Element mit data-title "Holz" (bzw. "Wood")
-  let $wood = $resTd.find("span.icon.header.wood[data-title='Holz'], span.icon.header.wood[data-title='Wood']").parent();
-  if ($wood.length) {
-    let text = $wood.text().trim();
-    scoutedResources.wood = genericHelpers.parseResourceValue(text);
-  }
-  
-  // Für Lehm: Suche das Element mit data-title "Lehm" (bzw. "Clay")
-  let $stone = $resTd.find("span.icon.header.stone[data-title='Lehm'], span.icon.header.stone[data-title='Clay']").parent();
-  if ($stone.length) {
-    let text = $stone.text().trim();
-    scoutedResources.stone = genericHelpers.parseResourceValue(text);
-  }
-  
-  // Für Eisen: Suche das Element mit data-title "Eisen" (bzw. "Iron")
-  let $iron = $resTd.find("span.icon.header.iron[data-title='Eisen'], span.icon.header.iron[data-title='Iron']").parent();
-  if ($iron.length) {
-    let text = $iron.text().trim();
-    scoutedResources.iron = genericHelpers.parseResourceValue(text);
-  }
+  // Durchlaufe alle <span class="nowrap">-Elemente im TD
+  $resTd.find("span.nowrap").each(function() {
+    const $span = $(this);
+    // Bestimme den Ressourcentyp anhand des data-title-Attributs des enthaltenen Icons
+    const resourceName = ($span.find("span.icon").attr("data-title") || "").toLowerCase().trim();
+    // Extrahiere ausschließlich die Textknoten (also den reinen Zahlenwert)
+    const numberText = $span.contents().filter(function() {
+      return this.nodeType === 3; // Text-Knoten
+    }).text().trim();
+    const value = genericHelpers.parseResourceValue(numberText);
+    // Ordne den Wert dem entsprechenden Schlüssel zu
+    if (resourceName === "holz") {
+      scoutedResources.wood = value;
+    } else if (resourceName === "lehm") {
+      scoutedResources.stone = value;
+    } else if (resourceName === "eisen") {
+      scoutedResources.iron = value;
+    }
+  });
 }
 
-// Anzeige der ausgelesenen Werte über ein twSDK Widget
+// Erzeuge ein Widget, um die ausgelesenen Werte anzuzeigen
 const resourceWidgetHTML = `
   <div style="padding: 5px;">
     <h4>Erspähte Rohstoffe</h4>
@@ -103,7 +104,8 @@ const resourceWidgetHTML = `
   </div>
 `;
 
-twSDK.renderBoxWidget(resourceWidgetHTML, scriptConfig.scriptData.prefix, 'resourceWidget');
+twSDK.renderFixedWidget(resourceWidgetHTML, scriptConfig.scriptData.prefix, 'resourceWidget');
+
 
     
     // Gebäudedaten parsen
