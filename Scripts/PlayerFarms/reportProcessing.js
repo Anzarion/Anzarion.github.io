@@ -61,8 +61,7 @@
     const timestamp = rawTimestamp ? genericHelpers.parseReportDate(rawTimestamp).toISOString() : "";
     
     // Ressourcen parsen
-// Ressourcen parsen – in reportProcessing.js
-// Standardobjekt: Alle Ressourcen initial auf 0 setzen
+// Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
 const $resTd = $htmlDoc.find("#attack_spy_resources")
@@ -70,29 +69,27 @@ const $resTd = $htmlDoc.find("#attack_spy_resources")
   .siblings("td").first();
 
 if ($resTd.length) {
-  // Für Holz: Suche nach dem Icon mit data-title "Holz" oder "Wood" und hole dessen übergeordneten Text.
-  let $wood = $resTd.find("span.icon[data-title='Holz'], span.icon[data-title='Wood']").parent();
+  // Für Holz: Suche das Element mit data-title "Holz" im Icon und hole den umgebenden Text
+  let $wood = $resTd.find("span.icon.header.wood[data-title='Holz']").parent();
   if ($wood.length) {
-    let text = $wood.text();
-    scoutedResources.wood = parseInt(text.replace(/[^\d]/g, "")) || 0;
+    let text = $wood.text().trim();
+    scoutedResources.wood = genericHelpers.parseResourceValue(text);
   }
   
-  // Für Lehm: Suche nach dem Icon mit data-title "Lehm" oder "Clay"
-  let $stone = $resTd.find("span.icon[data-title='Lehm'], span.icon[data-title='Clay']").parent();
+  // Für Lehm: Suche das Element mit data-title "Lehm" im Icon
+  let $stone = $resTd.find("span.icon.header.stone[data-title='Lehm']").parent();
   if ($stone.length) {
-    let text = $stone.text();
-    scoutedResources.stone = parseInt(text.replace(/[^\d]/g, "")) || 0;
+    let text = $stone.text().trim();
+    scoutedResources.stone = genericHelpers.parseResourceValue(text);
   }
   
-  // Für Eisen: Suche nach dem Icon mit data-title "Eisen" oder "Iron"
-  let $iron = $resTd.find("span.icon[data-title='Eisen'], span.icon[data-title='Iron']").parent();
+  // Für Eisen: Suche das Element mit data-title "Eisen" im Icon
+  let $iron = $resTd.find("span.icon.header.iron[data-title='Eisen']").parent();
   if ($iron.length) {
-    let text = $iron.text();
-    scoutedResources.iron = parseInt(text.replace(/[^\d]/g, "")) || 0;
+    let text = $iron.text().trim();
+    scoutedResources.iron = genericHelpers.parseResourceValue(text);
   }
 }
-
-
     
     // Gebäudedaten parsen
     let buildingLevels = { timberCamp: 0, clayPit: 0, ironMine: 0, wall: 0, storage: 0, hide: 0 };
