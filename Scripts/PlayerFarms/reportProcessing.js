@@ -69,27 +69,42 @@ const $resTd = $htmlDoc.find("#attack_spy_resources")
   .siblings("td").first();
 
 if ($resTd.length) {
-  // Für Holz: Suche das Element mit data-title "Holz" im Icon und hole den umgebenden Text
-  let $wood = $resTd.find("span.icon.header.wood[data-title='Holz']").parent();
+  // Für Holz: Suche das Element mit data-title "Holz" (bzw. "Wood")
+  let $wood = $resTd.find("span.icon.header.wood[data-title='Holz'], span.icon.header.wood[data-title='Wood']").parent();
   if ($wood.length) {
     let text = $wood.text().trim();
     scoutedResources.wood = genericHelpers.parseResourceValue(text);
   }
   
-  // Für Lehm: Suche das Element mit data-title "Lehm" im Icon
-  let $stone = $resTd.find("span.icon.header.stone[data-title='Lehm']").parent();
+  // Für Lehm: Suche das Element mit data-title "Lehm" (bzw. "Clay")
+  let $stone = $resTd.find("span.icon.header.stone[data-title='Lehm'], span.icon.header.stone[data-title='Clay']").parent();
   if ($stone.length) {
     let text = $stone.text().trim();
     scoutedResources.stone = genericHelpers.parseResourceValue(text);
   }
   
-  // Für Eisen: Suche das Element mit data-title "Eisen" im Icon
-  let $iron = $resTd.find("span.icon.header.iron[data-title='Eisen']").parent();
+  // Für Eisen: Suche das Element mit data-title "Eisen" (bzw. "Iron")
+  let $iron = $resTd.find("span.icon.header.iron[data-title='Eisen'], span.icon.header.iron[data-title='Iron']").parent();
   if ($iron.length) {
     let text = $iron.text().trim();
     scoutedResources.iron = genericHelpers.parseResourceValue(text);
   }
 }
+
+// Anzeige der ausgelesenen Werte über ein twSDK Widget
+const resourceWidgetHTML = `
+  <div style="padding: 5px;">
+    <h4>Erspähte Rohstoffe</h4>
+    <p>
+      <strong>Holz:</strong> ${genericHelpers.formatResourceOutput(scoutedResources.wood)}<br>
+      <strong>Lehm:</strong> ${genericHelpers.formatResourceOutput(scoutedResources.stone)}<br>
+      <strong>Eisen:</strong> ${genericHelpers.formatResourceOutput(scoutedResources.iron)}
+    </p>
+  </div>
+`;
+
+twSDK.renderFixedWidget(resourceWidgetHTML, scriptConfig.scriptData.prefix, 'resourceWidget');
+
     
     // Gebäudedaten parsen
     let buildingLevels = { timberCamp: 0, clayPit: 0, ironMine: 0, wall: 0, storage: 0, hide: 0 };
