@@ -62,6 +62,7 @@
     
     // Ressourcen parsen
 // Ressourcen parsen – in reportProcessing.js
+// Standardobjekt: Alle Ressourcen initial auf 0 setzen
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
 const $resTd = $htmlDoc.find("#attack_spy_resources")
@@ -69,27 +70,28 @@ const $resTd = $htmlDoc.find("#attack_spy_resources")
   .siblings("td").first();
 
 if ($resTd.length) {
-  // Hilfsfunktion, die für eine gegebene Ressource (z. B. Holz) den numerischen Wert extrahiert.
-  function extractResource(resourceNames) {
-    let value = 0;
-    // Gehe die möglichen Namen (Deutsch/Englisch) durch und suche das entsprechende Icon
-    for (let i = 0; i < resourceNames.length; i++) {
-      const name = resourceNames[i];
-      const $icon = $resTd.find(`span.icon[data-title='${name}']`);
-      if ($icon.length) {
-        // Das übergeordnete Element (Parent) enthält den Zahlenwert als Text.
-        const text = $icon.parent().text();
-        value = parseInt(text.replace(/[^\d]/g, "")) || 0;
-        break;
-      }
-    }
-    return value;
+  // Für Holz: Suche nach dem Icon mit data-title "Holz" oder "Wood" und hole dessen übergeordneten Text.
+  let $wood = $resTd.find("span.icon[data-title='Holz'], span.icon[data-title='Wood']").parent();
+  if ($wood.length) {
+    let text = $wood.text();
+    scoutedResources.wood = parseInt(text.replace(/[^\d]/g, "")) || 0;
   }
   
-  scoutedResources.wood  = extractResource(["Holz", "Wood"]);
-  scoutedResources.stone = extractResource(["Lehm", "Clay"]);
-  scoutedResources.iron  = extractResource(["Eisen", "Iron"]);
+  // Für Lehm: Suche nach dem Icon mit data-title "Lehm" oder "Clay"
+  let $stone = $resTd.find("span.icon[data-title='Lehm'], span.icon[data-title='Clay']").parent();
+  if ($stone.length) {
+    let text = $stone.text();
+    scoutedResources.stone = parseInt(text.replace(/[^\d]/g, "")) || 0;
+  }
+  
+  // Für Eisen: Suche nach dem Icon mit data-title "Eisen" oder "Iron"
+  let $iron = $resTd.find("span.icon[data-title='Eisen'], span.icon[data-title='Iron']").parent();
+  if ($iron.length) {
+    let text = $iron.text();
+    scoutedResources.iron = parseInt(text.replace(/[^\d]/g, "")) || 0;
+  }
 }
+
 
     
     // Gebäudedaten parsen
