@@ -61,31 +61,42 @@
     const timestamp = rawTimestamp ? genericHelpers.parseReportDate(rawTimestamp).toISOString() : "";
     
     // Ressourcen parsen
-let scoutedResources = null;
+// Standardobjekt mit allen Ressourcen initial auf 0
+let scoutedResources = { wood: 0, stone: 0, iron: 0 };
+
 const $resTd = $htmlDoc.find("#attack_spy_resources")
-  .find("th:contains('Erkannte Ressourcen:')")
+  .find("th:contains('Erspähte Rohstoffe:')")
   .siblings("td").first();
 
 if ($resTd.length) {
-  const resText = $resTd.text().trim();
-  if (resText.toLowerCase() === 'none') {
-    scoutedResources = { wood: 0, stone: 0, iron: 0 };
-  } else {
-    const parts = resText.split(/\s+/);
-    if (parts.length >= 3) {
-      scoutedResources = {
-        wood: genericHelpers.parseResourceValue(parts[0]),
-        stone: genericHelpers.parseResourceValue(parts[1]),
-        iron: genericHelpers.parseResourceValue(parts[2])
-      };
+  // Iteriere über alle <span class="nowrap">-Elemente innerhalb des TD
+  $resTd.find('span.nowrap').each(function() {
+    const $nowrap = $(this);
+    // Finde das Icon-Element, um den Ressourcentyp zu bestimmen
+    const $icon = $nowrap.find('span.icon');
+    const resourceName = $icon.attr('data-title'); // z.B. "Lehm" oder "Eisen"
+    
+    // Extrahiere den Zahlenwert: Entferne alle Kindelemente und trimme den restlichen Text
+    const numberStr = $nowrap.clone().children().remove().end().text().trim();
+    const value = genericHelpers.parseResourceValue(numberStr);
+    
+    // Mapping der angezeigten Ressourcennamen auf unsere internen Keys
+    const mapping = {
+      'Holz': 'wood',
+      'Wood': 'wood',
+      'Lehm': 'stone',
+      'Clay': 'stone',
+      'Eisen': 'iron',
+      'Iron': 'iron'
+    };
+    
+    const key = mapping[resourceName];
+    if (key) {
+      scoutedResources[key] = value;
     }
-  }
+  });
 }
 
-// Falls keine Ressourcen ermittelt wurden, setze Standardwerte (0)
-if (!scoutedResources) {
-  scoutedResources = { wood: 0, stone: 0, iron: 0 };
-}
 
     
     // Gebäudedaten parsen
