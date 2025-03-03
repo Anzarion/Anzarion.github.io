@@ -61,38 +61,47 @@
     const timestamp = rawTimestamp ? genericHelpers.parseReportDate(rawTimestamp).toISOString() : "";
     
     // Ressourcen parsen
-// Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
 // Standardobjekt: Alle Ressourcen initial auf 0 setzen
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
-// Suche den <td>-Bereich, in dem die Rohstoffwerte stehen (neben "Erspähte Rohstoffe:")
-const $resTd = $htmlDoc.find("#attack_spy_resources")
-  .find("th:contains('Erspähte Rohstoffe:')")
-  .siblings("td").first();
+// Finde den <td>-Bereich, in dem die Ressourcen stehen
+const $resTd = $htmlDoc.find("#attack_spy_resources td").first();
 
 if ($resTd.length) {
-  // Durchlaufe alle <span class="nowrap">-Elemente im TD
-  $resTd.find("span.nowrap").each(function() {
-    const $span = $(this);
-    // Bestimme den Ressourcentyp anhand des data-title-Attributs des enthaltenen Icons
-    const resourceName = ($span.find("span.icon").attr("data-title") || "").toLowerCase().trim();
-    // Extrahiere ausschließlich die Textknoten (also den reinen Zahlenwert)
-    const numberText = $span.contents().filter(function() {
-      return this.nodeType === 3; // Text-Knoten
-    }).text().trim();
-    const value = genericHelpers.parseResourceValue(numberText);
-    // Ordne den Wert dem entsprechenden Schlüssel zu
-    if (resourceName === "holz") {
-      scoutedResources.wood = value;
-    } else if (resourceName === "lehm") {
-      scoutedResources.stone = value;
-    } else if (resourceName === "eisen") {
-      scoutedResources.iron = value;
-    }
-  });
+  const $nowraps = $resTd.find("span.nowrap");
+  
+  if ($nowraps.length === 3) {
+    // Bei 3 Einträgen: Feste Reihenfolge (erster: Holz, zweiter: Lehm, dritter: Eisen)
+    const woodText = $nowraps.eq(0).text().replace(/[^\d]/g, "");
+    scoutedResources.wood = parseInt(woodText, 10) || 0;
+    
+    const stoneText = $nowraps.eq(1).text().replace(/[^\d]/g, "");
+    scoutedResources.stone = parseInt(stoneText, 10) || 0;
+    
+    const ironText = $nowraps.eq(2).text().replace(/[^\d]/g, "");
+    scoutedResources.iron = parseInt(ironText, 10) || 0;
+  } else {
+    // Fallback: Überprüfe jedes Element und ermittle den Ressourcentyp anhand des data-title
+    $nowraps.each(function() {
+      const $span = $(this);
+      // Hole den Ressourcentyp, z. B. "Holz", "Lehm", "Eisen" (unabhängig von der Sprache)
+      const resourceType = ($span.find("span.icon").attr("data-title") || "").toLowerCase().trim();
+      // Entferne alle nicht-numerischen Zeichen aus dem gesamten Textinhalt des Span
+      const valueText = $span.text().replace(/[^\d]/g, "");
+      const value = parseInt(valueText, 10) || 0;
+      
+      if (resourceType === "holz" || resourceType === "wood") {
+        scoutedResources.wood = value;
+      } else if (resourceType === "lehm" || resourceType === "clay") {
+        scoutedResources.stone = value;
+      } else if (resourceType === "eisen" || resourceType === "iron") {
+        scoutedResources.iron = value;
+      }
+    });
+  }
 }
 
-// Erzeuge ein Widget, um die ausgelesenen Werte anzuzeigen
+// Anzeige der ermittelten Ressourcen über ein twSDK Widget
 const resourceWidgetHTML = `
   <div style="padding: 5px;">
     <h4>Erspähte Rohstoffe</h4>
