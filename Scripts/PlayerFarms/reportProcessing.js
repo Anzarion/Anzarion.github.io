@@ -61,8 +61,6 @@
     const timestamp = rawTimestamp ? genericHelpers.parseReportDate(rawTimestamp).toISOString() : "";
     
     // Ressourcen parsen
-// Standardobjekt mit allen Ressourcen initial auf 0
-// Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
 // Standardobjekt: Alle Ressourcen werden initial auf 0 gesetzt
 let scoutedResources = { wood: 0, stone: 0, iron: 0 };
 
@@ -71,48 +69,31 @@ const $resTd = $htmlDoc.find("#attack_spy_resources")
   .siblings("td").first();
 
 if ($resTd.length) {
-  const resText = $resTd.text().trim();
-  const parts = resText.split(/\s+/);
-
-  if (parts.length === 3) {
-    // Originalfall: Es wurden alle drei Werte gefunden.
-    scoutedResources = {
-      wood: genericHelpers.parseResourceValue(parts[0]),
-      stone: genericHelpers.parseResourceValue(parts[1]),
-      iron: genericHelpers.parseResourceValue(parts[2])
-    };
-  } else {
-    // Fallback: Falls nicht genau drei Zahlen vorhanden sind,
-    // gehe jedes <span class="nowrap"> einzeln durch, um den Ressourcentyp und den zugehörigen Wert zu ermitteln.
-    $resTd.find('span.nowrap').each(function() {
-      const $span = $(this);
-      // Ermittle den angezeigten Ressourcentyp über das data-title-Attribut des Icon-Elements.
-      const resourceType = $span.find('span.icon').attr('data-title');
-      // Klone das Element, entferne alle Kindknoten und extrahiere den reinen Text (der numerische Wert).
-      const valueStr = $span.clone().children().remove().end().text().trim();
-      const value = genericHelpers.parseResourceValue(valueStr);
-
-      // Mapping von angezeigtem Ressourcennamen zu internen Schlüsseln
-      const mapping = {
-        'Holz': 'wood',
-        'Wood': 'wood',
-        'Lehm': 'stone',
-        'Clay': 'stone',
-        'Eisen': 'iron',
-        'Iron': 'iron'
-      };
-      
-      const key = mapping[resourceType];
-      if (key) {
-        scoutedResources[key] = value;
-      }
-    });
-  }
+  // Iteriere über alle Elemente, die innerhalb des TD die Ressourcenzahlen enthalten
+  $resTd.find("span.nowrap").each(function() {
+    const $span = $(this);
+    // Ermittle den Ressourcentyp über das data-title-Attribut des enthaltenen Icon-Elements
+    const resourceType = ($span.find("span.icon").attr("data-title") || "").toLowerCase();
+    // Extrahiere den reinen Text (numerischer Wert) – entferne dabei alle nicht-numerischen Zeichen
+    const value = parseInt($span.text().replace(/[^\d]/g, "")) || 0;
+    
+    // Ordne den Wert anhand des ermittelten Ressourcentyps zu
+    switch (resourceType) {
+      case "holz":
+      case "wood":
+        scoutedResources.wood = value;
+        break;
+      case "lehm":
+      case "clay":
+        scoutedResources.stone = value;
+        break;
+      case "eisen":
+      case "iron":
+        scoutedResources.iron = value;
+        break;
+    }
+  });
 }
-
-
-
-
     
     // Gebäudedaten parsen
     let buildingLevels = { timberCamp: 0, clayPit: 0, ironMine: 0, wall: 0, storage: 0, hide: 0 };
